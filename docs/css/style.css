@@ -5,6 +5,10 @@ body {
 	text-align: center;
 }
 
+#top {
+	text-align: left;
+}
+
 a:hover {
 	color: #d00;
 	text-decoration: none;
@@ -97,6 +101,16 @@ canvas.emscripten {
 #stat {
 	margin: 0 auto;
 	width: 210px;
+}
+
+#top ul {
+	position: absolute;
+	left: 0px;
+	top: 70px;
+}
+
+#top li {
+	margin-bottom: 0.8em;
 }
 
 #logo {

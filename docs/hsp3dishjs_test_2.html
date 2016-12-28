@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en-us">
+	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+		<title>hsp3dish.js test 2</title>
+		<link type="text/css" rel="stylesheet" href="css/style.css" />
+	</head>
+	<body>
+		<div id="header">
+			<div id="logo">
+				<a href="http://uchitsukushi2.hatenablog.jp/entry/20041107/sm">
+					<img src="images/logo.svg" width="100">
+				</a>
+			</div>
+			<div id="stat">
+				<div class="spinner" id='spinner'></div>
+				<div class="emscripten" id="status">Downloading...</div>
+			</div>
+			<span id='controls'>
+				<span class="chkbox"><input type="checkbox" id="resize">Resize canvas</span>
+				<span class="chkbox"><input type="checkbox" id="pointerLock">Lock/hide mouse pointer &nbsp;&nbsp;&nbsp;</span>
+				<span><input type="button" value="Fullscreen" onclick="Module.requestFullScreen(document.getElementById('pointerLock').checked, document.getElementById('resize').checked)"></span>
+			</span>
+		</div>
+		<div class="emscripten">
+			<progress value="0" max="100" id="progress" hidden=1></progress>
+		</div>
+		<div class="emscripten_border">
+			<canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()"></canvas>
+		</div>
+		
+		<textarea id="output" rows="8"></textarea>
+		<script type='text/javascript'>
+			var global_data_obj = {ax:'main',fn:'hsp3dishjs_test_2',sz:342023,n:9,f:['main.ax','font.png','loop_101.ogg','loop_88.ogg','se_game_08.ogg','se_game_32.ogg','se_game_34.ogg','se_game_35.ogg','se_game_42.ogg'],s:[0,6531,7874,122564,239795,291879,297124,311593,325846],e:[6531,7874,122564,239795,291879,297124,311593,325846,342023],c:[0,0,0,0,0,0,0,0,0],a:[0,0,0,0,0,0,0,0,0],wx:'640',wy:'480',sx:'640',sy:'480',as:'0',fps:'0',step:'5000'};
+		</script>
+		<script type="text/javascript" src="js/load.js"></script>
+		<script async type="text/javascript" src="js/hsp3dish_35b4.js"></script>
+		<p id="footer">powered by <a href="http://hsp.tv/make/hsp3dish.html" target="_blank">hsp3dish.js</a> / OpenHSP</p>
+	</body>
+</html>
