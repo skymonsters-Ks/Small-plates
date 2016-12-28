@@ -1,0 +1,113 @@
+body {
+	font-family: arial;
+	margin: 0;
+	padding: 0;
+	text-align: center;
+}
+
+a:hover {
+	color: #d00;
+	text-decoration: none;
+}
+
+#header {
+	position: relative;
+	width: 800px;
+	margin: 0 auto;
+}
+
+.emscripten {
+	margin: 0 auto;
+	display: block;
+}
+div.emscripten {
+	text-align: center;
+}
+.emscripten_border {
+	margin: 50px auto 24px;
+}
+/* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+canvas.emscripten {
+	border: 0px none;
+}
+
+#emscripten_logo {
+	display: inline-block;
+	margin: 0;
+}
+
+.spinner {
+	height: 30px;
+	width: 30px;
+	margin: 20px 0 0;
+	display: inline-block;
+
+	border: 5px solid #ebebeb;
+	border-top-color: #787878;
+	border-radius: 100%;
+	background-color: rgb(189, 215, 46);
+
+	animation: rotation .8s linear infinite;
+	-webkit-animation: rotation .8s linear infinite;
+}
+@keyframes rotation {
+	from {transform: rotate(0deg);}
+	to {transform: rotate(360deg);}
+}
+@-webkit-keyframes rotation {
+	from {-webkit-transform: rotate(0deg);}
+	to {-webkit-transform: rotate(360deg);}
+}
+
+#status {
+	display: inline-block;
+	vertical-align: top;
+	margin-top: 30px;
+	font-weight: bold;
+	color: rgb(120, 120, 120);
+}
+
+#progress {
+	height: 20px;
+	width: 30px;
+}
+
+#controls {
+	display: none;
+	position: absolute;
+	right: 30px;
+	top: 30px;
+}
+
+#output {
+	width: 600px;
+	height: 100px;
+	margin: 24px auto 0;
+	display: block;
+	color: #888;
+	font-family: 'Lucida Console', Monaco, monospace;
+	font-size: 85%;
+	outline: none;
+}
+
+.chkbox {
+	display: none;
+}
+
+#stat {
+	margin: 0 auto;
+	width: 210px;
+}
+
+#logo {
+	position: absolute;
+	left: 10px;
+	top: 10px;
+	transition: all .7s ease;
+	-webkit-transition: all .7s ease;
+}
+#logo:hover {
+	opacity: 0.6;
+	transform: rotate(6deg);
+	-webkit-transform: rotate(6deg);
+}
