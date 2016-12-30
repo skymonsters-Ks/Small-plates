@@ -92,9 +92,7 @@ Module.preRun.push(function() {
 			xhr.open('GET', 'data/' + name, true);
 			xhr.responseType = 'arraybuffer';
 			xhr.onprogress = function(e) {
-				if (Module['setStatus']) {
-					Module['setStatus']('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
-				}
+				Module.setStatus('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
 			};
 			xhr.onload = function(e) {
 				if (this.status == 200) {
