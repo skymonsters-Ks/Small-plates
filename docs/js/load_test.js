@@ -76,34 +76,43 @@ Module.preRun.push(function() {
 	ENV.HSP_FPS = global_data_obj.fps;
 	ENV.HSP_LIMIT_STEP = global_data_obj.step;
 });
-/*
-var Module;
-if (typeof Module === 'undefined') Module = eval('(function() { try { return Module || {} } catch(e) { return {} } })()');
-*/
+
 (function() {
 
 	function runWithFS() {
 		
+		var loadedDataNum = 0;
+		var dataNum = global_data_obj.n;
+		
 		function loadData(id) {
 			var name = global_data_obj.f[id];
+			var size = global_data_obj.e[id] - global_data_obj.s[id];
+			Module["addRunDependency"]('data_' + name);
 			var xhr = new XMLHttpRequest();
 			xhr.open('GET', 'data/' + name, true);
 			xhr.responseType = 'arraybuffer';
+			xhr.onprogress = function(e) {
+				if (Module['setStatus']) {
+					Module['setStatus']('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
+				}
+			};
 			xhr.onload = function(e) {
 				if (this.status == 200) {
 					var stream = FS.open(name, 'w');
 					var data = new Uint8Array(this.response);
-					FS.write(stream, data, 0, global_data_obj.e[id] - global_data_obj.s[id], 0);
+					FS.write(stream, data, 0, size, 0);
 					FS.close(stream);
 					console.log('Downloaded ' + name);
 				} else {
 					console.log('Failed to download ' + name);
 				}
+				loadedDataNum++;
+				Module['removeRunDependency']('data_' + name);
 			};
 			xhr.send();
 		}
 		
-		for (var i = 0; i < global_data_obj.n; i++) loadData(i);
+		for (var i = 0; i < dataNum; i++) loadData(i);
 
 	}
 	
