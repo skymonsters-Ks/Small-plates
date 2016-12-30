@@ -4,6 +4,7 @@ var spinnerElement = document.getElementById('spinner');
 var controlsElement = document.getElementById('controls');
 
 var Module = {
+	TOTAL_MEMORY: 1024*1024*30,
 	preRun: [],
 	postRun: [],
 	print: (function() {
