@@ -85,13 +85,16 @@ canvas.emscripten {
 
 #output {
 	width: 600px;
-	height: 100px;
+	height: 60px;
 	margin: 24px auto 0;
-	display: block;
+	display: none;
 	color: #888;
 	font-family: 'Lucida Console', Monaco, monospace;
 	font-size: 85%;
 	outline: none;
+	border: none;
+	overflow: hidden;
+	text-align: center;
 }
 
 .chkbox {
@@ -106,22 +109,37 @@ canvas.emscripten {
 #top ul {
 	position: absolute;
 	left: 0px;
-	top: 70px;
+	top: 80px;
 }
 
 #top li {
 	margin-bottom: 0.8em;
 }
 
-#logo {
+.logo {
 	position: absolute;
-	left: 10px;
-	top: 10px;
 	transition: all .7s ease;
 	-webkit-transition: all .7s ease;
 }
-#logo:hover {
+.logo:hover {
 	opacity: 0.6;
+}
+
+#logo_top {
+	left: -100px;
+	top: -60px;
+	opacity: 0.4;
+}
+#logo_top:hover {
 	transform: rotate(6deg);
 	-webkit-transform: rotate(6deg);
+}
+
+#logo_github {
+	left: 150px;
+	top: 20px;
+}
+#logo_github:hover {
+	transform: scale(1.2);
+	-webkit-transform: scale(1.2);
 }

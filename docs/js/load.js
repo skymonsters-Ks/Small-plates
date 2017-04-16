@@ -2,6 +2,7 @@ var statusElement = document.getElementById('status');
 var progressElement = document.getElementById('progress');
 var spinnerElement = document.getElementById('spinner');
 var controlsElement = document.getElementById('controls');
+var outputElement = document.getElementById('output');
 
 var Module = {
 	TOTAL_MEMORY: 1024*1024*30,
@@ -52,6 +53,7 @@ var Module = {
 			if (!text) {
 				spinnerElement.style.display = 'none';
 				controlsElement.style.display = 'inline-block';
+				outputElement.style.display = 'block';
 			}
 		}
 		statusElement.innerHTML = text;
