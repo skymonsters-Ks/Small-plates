@@ -101,7 +101,7 @@ Module.preRun.push(function() {
 					var data = new Uint8Array(this.response);
 					FS.write(stream, data, 0, e.total, 0);
 					FS.close(stream);
-					console.log('Downloaded ' + name);
+					console.log('Downloaded ' + name + ' ' + e.total);
 				} else {
 					console.log('Failed to download ' + name);
 				}
