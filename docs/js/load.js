@@ -93,6 +93,7 @@ Module.preRun.push(function() {
 			xhr.open('GET', 'data/' + name, true);
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('application/octet-stream');
+			xhr.setRequestHeader('Content-Encoding', 'identity');
 			xhr.onprogress = function(e) {
 				Module.setStatus('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
 			};
