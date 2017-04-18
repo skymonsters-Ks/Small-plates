@@ -92,6 +92,7 @@ Module.preRun.push(function() {
 			Module["addRunDependency"]('data_' + name);
 			xhr.open('GET', 'data/' + name, true);
 			xhr.responseType = 'arraybuffer';
+			xhr.overrideMimeType('application/octet-stream');
 			xhr.onprogress = function(e) {
 				Module.setStatus('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
 			};
