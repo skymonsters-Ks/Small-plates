@@ -93,7 +93,6 @@ Module.preRun.push(function() {
 			xhr.open('GET', 'data/' + name, true);
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('application/octet-stream');
-			xhr.setRequestHeader('Accept-Encoding', 'identity');
 			xhr.onprogress = function(e) {
 				Module.setStatus('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
 			};
@@ -101,9 +100,10 @@ Module.preRun.push(function() {
 				if (this.status == 200) {
 					var stream = FS.open(name, 'w');
 					var data = new Uint8Array(this.response);
-					FS.write(stream, data, 0, e.total, 0);
+					var size = e.total;
+					FS.write(stream, data, 0, size, 0);
 					FS.close(stream);
-					console.log('Downloaded ' + name + ' ' + xhr.getAllResponseHeaders());
+					console.log('Downloaded ' + name + ' ' + size + 'byte');
 				} else {
 					console.log('Failed to download ' + name);
 				}
