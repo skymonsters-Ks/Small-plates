@@ -19,6 +19,10 @@ a:hover {
 /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
 canvas.emscripten {
 	border: 0px none;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	z-index: 9999;
 }
 
 .spinner {
