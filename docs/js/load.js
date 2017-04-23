@@ -87,7 +87,7 @@ Module.preRun.push(function() {
 					FS.close(stream);
 					console.log('Loaded ' + name + ' ' + size + 'byte');
 				} else {
-					console.log('Failed to load ' + name);
+					console.error('Failed to load ' + name);
 				}
 				loadedDataNum++;
 				Module['removeRunDependency']('data_' + name);
