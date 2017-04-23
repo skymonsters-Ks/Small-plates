@@ -1,12 +1,6 @@
 body {
-	font-family: arial;
 	margin: 0;
 	padding: 0;
-	text-align: center;
-}
-
-#top {
-	text-align: left;
 }
 
 a:hover {
@@ -14,132 +8,105 @@ a:hover {
 	text-decoration: none;
 }
 
-#header {
-	position: relative;
-	width: 800px;
-	margin: 0 auto;
-}
-
 .emscripten {
 	margin: 0 auto;
 	display: block;
-}
-div.emscripten {
 	text-align: center;
 }
 .emscripten_border {
-	margin: 50px auto 24px;
+	margin: -20px auto 0px;
 }
 /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
 canvas.emscripten {
 	border: 0px none;
 }
 
-#emscripten_logo {
-	display: inline-block;
-	margin: 0;
-}
-
 .spinner {
 	height: 30px;
 	width: 30px;
-	margin: 20px 0 0;
-	display: inline-block;
+	margin: 0 auto;
 
-	border: 5px solid #ebebeb;
-	border-top-color: #787878;
+	border: 5px solid #eee;
+	border-top-color: #777;
 	border-radius: 100%;
-	background-color: rgb(189, 215, 46);
+	background-color: #bd2;
 
 	animation: rotation .8s linear infinite;
-	-webkit-animation: rotation .8s linear infinite;
 }
 @keyframes rotation {
 	from {transform: rotate(0deg);}
 	to {transform: rotate(360deg);}
 }
-@-webkit-keyframes rotation {
-	from {-webkit-transform: rotate(0deg);}
-	to {-webkit-transform: rotate(360deg);}
+
+#stat {
+	margin: 40px auto 0px;
+	width: 320px;
 }
 
 #status {
-	display: inline-block;
-	vertical-align: top;
-	margin-top: 30px;
+	margin-top: 10px;
 	font-weight: bold;
-	color: rgb(120, 120, 120);
-}
-
-#progress {
-	height: 20px;
-	width: 30px;
+	font-family: arial;
+	color: #777;
 }
 
 #controls {
 	display: none;
 	position: absolute;
 	right: 30px;
-	top: 30px;
+	top: 26px;
 }
 
 #output {
-	width: 600px;
-	height: 60px;
-	margin: 24px auto 0;
+	width: 95%;
+	height: 34px;
+	margin: 1.2em auto;
 	display: none;
 	color: #888;
-	font-family: 'Lucida Console', Monaco, monospace;
+	font-family: 'Lucida Console', Monaco, monospace, Meiryo;
 	font-size: 85%;
 	outline: none;
 	border: none;
 	overflow: hidden;
 	text-align: center;
+	background-color: transparent;
 }
 
-.chkbox {
-	display: none;
+#header {
+	background-image: url(../images/logo.svg);
+	background-repeat: no-repeat;
+	background-position: 0px -20px;
 }
 
-#stat {
-	margin: 0 auto;
-	width: 210px;
+#title {
+	padding: 20px 20px 40px;
+	margin: 0 0 -20px 0;
+	background: rgba(210, 210, 250, 0.95);
+	background: linear-gradient(to bottom, rgba(200, 200, 240, 0.95), #fff);
+	font-family: arial;
 }
 
-#top ul {
-	position: absolute;
-	left: 0px;
-	top: 80px;
+#footer {
+	padding: 30px 0 20px;
+	margin-top: -20px;
+	background: #dd9;
+	background: linear-gradient(to top, #cc8, #fff);
+	text-align: center;
 }
 
-#top li {
+#footer p {
+	margin: 1em;
+}
+
+#footer #octocat {
+	margin-left: 34px;
+	text-align: left;
+}
+
+ul {
+	margin: 30px 20px;
+}
+
+li {
 	margin-bottom: 0.8em;
-}
-
-.logo {
-	position: absolute;
-	transition: all .7s ease;
-	-webkit-transition: all .7s ease;
-}
-.logo:hover {
-	opacity: 0.6;
-}
-
-#logo_top {
-	left: -100px;
-	top: -60px;
-	opacity: 0.4;
-}
-#logo_top:hover {
-	transform: rotate(6deg);
-	-webkit-transform: rotate(6deg);
-}
-
-#logo_github {
-	left: 150px;
-	top: 20px;
-}
-#logo_github:hover {
-	transform: scale(1.2);
-	-webkit-transform: scale(1.2);
 }
