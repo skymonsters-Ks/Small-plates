@@ -1,0 +1,284 @@
+;$a>ax_fpstest.ax
+
+; HSP 3.5b5
+
+#packopt xsize 480
+#packopt ysize 480
+
+#include "hsp3dish.as"
+#include "../common/font.hsp"
+
+
+#module dish_util
+
+#deffunc timer var _dt, var _fps, int _udms, int _id
+
+	getreq t, SYSREQ_TIMER
+	_dt = t - pt(_id)
+	pt(_id) = t
+	tdt(_id) += _dt
+	fc(_id)++
+	if (tdt(_id) >= _udms) {
+		_fps = double(fc(_id)) / tdt(_id) * 1000
+		fc(_id) = 0
+		tdt(_id) = 0
+	}
+	return
+
+#global
+
+
+*start
+
+	dim pt@dish_util, 16
+
+	celload "star.png", 1
+	celdiv 1, 32, 32, 16, 16
+
+	initFont
+	loadFont "font.png"
+
+	gsel 0
+
+	starNum = 100
+	initStars starNum
+	starSize = 1.0
+
+	fps_update = 60.0
+	fps_draw = 60.0
+	waitTime = 0
+	dispMode = 4
+	drawMode = 0
+	drawModeStr = "grect", "celput", "grotate"
+	menuHoverAreaTop = 9999, 20, 50, 80, 130, 160
+	skipDrawLimit = 0
+
+	dim dtBuf, 440
+	dtPtr = 439
+
+*mainLoop
+	timer dt_update, fps_update, 500
+
+	gosub *update
+	
+	if (skipDraw >= skipDrawLimit) {
+		skipDraw = 0
+		timer dt_draw, fps_draw, 500, 1
+		gosub *draw
+	} else {
+		skipDraw++
+	}
+
+	await waitTime
+	goto *mainLoop
+
+
+*update
+	dtPtr++
+	dtPtr \= 440
+	dtBuf(dtPtr) = dt_update
+
+	stick key, 256
+
+	if (key & 16) {
+		dispMode--
+		if (dispMode < 0) {
+			dispMode += 4
+		}
+	}
+
+	lButtonDown = 0
+	if (key & 256) {
+		if (lButtonPressed == 0) {
+			lButtonPressed = 1
+			lButtonDown = 1
+		}
+	} else {
+		lButtonPressed = 0
+		menuSelectId = 0
+	}
+
+	if (mousex != mPrePosX) {
+		mPosXMove = 1
+		mPrePosX = mousex
+	} else {
+		mPosXMove = 0
+	}
+
+	menuHoverId = 0
+	repeat 5, 1
+		if ((mousey >= menuHoverAreaTop(cnt)) && (mousey <= menuHoverAreaTop(cnt)+20)) {
+			menuHoverId = cnt
+			if (lButtonDown) {
+				menuSelectId = cnt
+				selectPosX = mousex
+			}
+			break
+		}
+	loop
+
+	if (dispMode >= 2) {
+		if ((menuSelectId == 1) && (lButtonDown)) {
+			drawMode++
+			drawMode \= 3
+		}
+		if ((menuSelectId == 2) && (mPosXMove)) {
+			initStars limit(starNum + (mousex - selectPosX) * 10, 0, 10000)
+			selectPosX = mousex
+		}
+		if ((menuSelectId == 3) && (mPosXMove)) {
+			starSize = limitf(starSize + double(mousex - selectPosX) / 40, 0, 10)
+			selectPosX = mousex
+		}
+		if ((menuSelectId == 4) && (mPosXMove)) {
+			waitTime = limit(waitTime + (mousex - selectPosX) / 4, 0, 100)
+			if ((mousex - selectPosX) / 4 != 0) {
+				selectPosX = mousex
+			}
+		}
+		if ((menuSelectId == 5) && (mPosXMove)) {
+			skipDrawLimit = limit(skipDrawLimit + (mousex - selectPosX) / 8, 0, 30)
+			if ((mousex - selectPosX) / 8 != 0) {
+				selectPosX = mousex
+			}
+		}
+	}
+		
+	moveStars
+
+	return
+	
+	
+*draw
+	redraw 0
+	color
+	boxf
+
+	drawStars drawMode
+
+	gmode 3, 480, 480, 160
+	color
+	grect 240, 240
+
+	if (dispMode >= 2) {
+		t = menuSelectId > 0
+		gmode 5, 480, 20, 80 + t * 40
+		if (t) {
+			t = menuSelectId
+		} else {
+			t = menuHoverId
+		}
+		color 255
+		grect 240, menuHoverAreaTop(t) + 10
+
+		gmode 5, , , 255
+		setStrAttr 2, 2
+		drawStr "mode: " + drawModeStr(drawMode), 20, menuHoverAreaTop(1) + 2
+		drawStr "num: " + starNum, 20, menuHoverAreaTop(2) + 2
+		drawStr strf("size: %.2f", starSize), 20, menuHoverAreaTop(3) + 2
+		drawStr "await: " + waitTime, 20, menuHoverAreaTop(4) + 2
+		drawStr "skip: " + skipDrawLimit, 20, menuHoverAreaTop(5) + 2
+		if (menuSelectId >= 2) {
+			setStrAttr 2, 2, -2
+			drawStrC "<-  ->", mousex, mousey - 8
+		}
+	}
+	if (dispMode >= 1) {
+		gmode 5, , , 255
+		setStrAttr 2, 2
+		drawStrR strf("%.1f / %.1f fps", fps_draw, fps_update), 460, 440
+	}
+	if (dispMode >= 4) {
+		gmode 5, , , 255
+		setStrAttr 1, 1, 2
+		drawStr "space key to toggle info on/off", 20, 440
+	}
+
+	if (dispMode >= 3) {
+		color 255, 255, 255
+		boxf 460, 434 - dt_update * 2, 462, 434
+		pos 460, 434 - dt_update * 2
+		repeat 440
+			c = dtPtr - cnt
+			if (c < 0) {
+				c += 440
+			}
+			line 460 - cnt, 434 - dtBuf(c) * 2
+		loop
+	}
+
+	color 255, 255, 255
+	boxf 0, 480
+	boxf 480
+	pos -100, 0
+	mes "."
+	
+	redraw 1
+	return
+	
+	
+#deffunc initStars int _n
+
+	starNum = _n
+	ddim starPosX, starNum
+	ddim starPosY, starNum
+	ddim starVelX, starNum
+	ddim starVelY, starNum
+	repeat starNum
+		starPosX(cnt) = double(rnd(480))
+		starPosY(cnt) = double(rnd(480))
+		starVelX(cnt) = (double(rnd(50)) / 10) * ((rnd(40) / 20) * 2 - 1)
+		starVelY(cnt) = (double(rnd(50)) / 10) * ((rnd(40) / 20) * 2 - 1)
+	loop
+	return
+
+
+#deffunc moveStars
+
+	repeat starNum
+		starPosX(cnt) += starVelX(cnt)
+		starPosY(cnt) += starVelY(cnt)
+		if (starPosX(cnt) < 0) {
+			starPosX(cnt) = -starPosX(cnt)
+			starVelX(cnt) = -starVelX(cnt)
+		}
+		if (starPosX(cnt) > 480) {
+			starPosX(cnt) = 960.0 - starPosX(cnt)
+			starVelX(cnt) = -starVelX(cnt)
+		}
+		if (starPosY(cnt) < 0) {
+			starPosY(cnt) = -starPosY(cnt)
+			starVelY(cnt) = -starVelY(cnt)
+		}
+		if (starPosY(cnt) > 480) {
+			starPosY(cnt) = 960.0 - starPosY(cnt)
+			starVelY(cnt) = -starVelY(cnt)
+		}
+	loop
+	return
+
+
+#deffunc drawStars int _mode
+
+	if (_mode == 1) {
+		gmode 5, , , 170
+		repeat starNum
+			pos starPosX(cnt), starPosY(cnt)
+			celput 1, , starSize, starSize
+		loop
+	} else : if (_mode == 2) {
+		gmode 5, 32, 32, 170
+		s = starSize * 32
+		repeat starNum
+			pos starPosX(cnt), starPosY(cnt)
+			grotate 1, 0, 0, , s, s
+		loop
+	} else {
+		gmode 5, 32, 32, 100
+		s = starSize * 32
+		color 255, 255, 255
+		repeat starNum
+			grect starPosX(cnt), starPosY(cnt), , s, s
+		loop
+	}
+	return

@@ -1,0 +1,217 @@
+;$a>ax_dstars.ax
+
+#include "hsp3dish.as"
+#include "../common/font.hsp"
+
+#const PI_D2 M_PI / 2
+
+#module
+#defcfunc pointInRect int _px, int _py, int _x, int _y, int _w, int _h
+	if (_px >= _x) : if (_px < _x + _w) {
+	if (_py >= _y) : if (_py < _y + _h) {
+		return 1
+	}}
+	return 0
+#global
+
+#module menu
+
+#deffunc initMenu
+
+	string = "STAR NUM: %2d", "PARAM A: %3d", "PARAM B: %3d", "PARAM C: %3d"
+	nums = length(string)
+	posx = 0, 0, 0, 0
+	posy = 10, 50, 90, 130
+	sizex = 480, 480, 480, 480
+	sizey = 32, 32, 32, 32
+	value = 20.0, 8.0, 14.0, 12.0
+	pitch = 0.2, 0.2, 0.2, 0.2
+	maxval = 50, 20, 30, 30
+	minval = 0, -20, -30, -30
+	hoverId = -1
+	selectId = -1
+	return
+
+#deffunc manageMenu int _bdown, int _bpress
+
+	if (_bpress) : else {
+		if (selectId >= 0) {
+			value(selectId) = double(int(value(selectId)))
+		}
+		selectId = -1
+	}
+	if (mousex != mPreX) {
+		mouseMoved = 1
+		mPreX = mousex
+	} else {
+		mouseMoved = 0
+	}
+	if (selectId >= 0) {
+		if (mouseMoved) {
+			i = selectId
+			value(i) = limitf(value(i) + pitch(i) * (mousex - selectPosX), minval(i), maxval(i))
+			selectPosX = mousex
+		}
+	} else {
+		hoverId = -1
+		repeat nums
+			if (pointInRect(mousex, mousey, posx(cnt), posy(cnt), sizex(cnt), sizey(cnt))) {
+				hoverId = cnt
+				if (_bdown) {
+					selectId = cnt
+					selectPosX = mousex
+				}
+				break
+			}
+		loop
+	}
+	return hoverId >= 0
+	
+#defcfunc getMenuVal int _id
+
+	return int(value(_id))
+
+#deffunc drawMenu
+
+	if (hoverId >= 0) {
+		i = hoverId
+		if (selectId >= 0) {
+			a = 120
+		} else {
+			a = 80
+		}
+		gmode 5, sizex(i), sizey(i), a
+		color 255
+		grect posx(i) + sizex(i) / 2, posy(i) + sizey(i) / 2
+	}
+	gmode 5, , , 255
+	repeat nums
+		drawStr strf(string(cnt), value(cnt)), posx(cnt) + 10, posy(cnt) + 8
+	loop
+	if (selectId >= 0) {
+		x = mousex
+		y = mousey - 8
+		if (getMenuVal(selectId) == int(maxval(selectId))) {
+			drawStr "<", x - 34, y
+			drawStr "-", x - 30, y
+			drawStr "]", x + 14, y
+		} else : if (getMenuVal(selectId) == int(minval(selectId))) {
+			drawStr "[", x - 30, y
+			drawStr "-", x + 14, y
+			drawStr ">", x + 18, y
+		} else {
+			drawStr "<", x - 34, y
+			drawStr "-", x - 30, y
+			drawStr "-", x + 14, y
+			drawStr ">", x + 18, y
+		}
+	}
+	return
+
+#global
+
+
+*start
+	
+	initFont
+	loadFont "font01.png"
+	setStrAttr 2, 2, 3
+
+	celload "star.png"
+	img_star = stat
+	celdiv stat, , , 16, 16
+	
+	initMenu
+	onMenu = 0
+	
+*initTimer
+
+	getreq st, SYSREQ_TIMER
+	bst = st
+	
+*mainLoop
+
+	getreq nt, SYSREQ_TIMER
+	time = nt - st
+	
+	stick key, 256
+	
+	bdown = 0
+	if (key & 256) {
+		if (bpress == 0) {
+			bpress = 1
+			bdown = 1
+		}
+	} else {
+		bpress = 0
+	}
+
+	onRect = pointInRect(mousex, mousey, 440, 437, 20, 20)
+	if (bdown) : if (onRect) : if (malpha) {
+		bdown = 0
+		goto *initTimer
+	}
+	
+	if (onMenu) {
+		manageMenu bdown, bpress
+		if (bdown) : if (stat == 0) {
+			onMenu = 0
+			bst = nt
+		}
+	} else {
+		malpha = limit(255 - (nt - bst - 5000) / 10, 0, 255)
+		if (bdown) {
+			onMenu = 1
+			malpha = 255
+		}
+	}
+	
+	redraw 0
+	
+	gmode 0
+	gradf , , , , 1, $10243e, $220428
+	
+	gfilter 1
+	
+	gmode 5, , , 200 - onMenu * 120
+	a = 0.003 * getMenuVal(1)
+	b = 0.002 * getMenuVal(2)
+	c = 0.002 * getMenuVal(3)
+	repeat getMenuVal(0)
+		hsvmulcolor (0.015 * time + cnt * 10) \ 192, 180, 180
+		t = (a * cnt + 0.8) * 0.1 * time
+		pos sin(b * t) * 200 + 240, cos(c * t + PI_D2) * 200 + 240
+		celput img_star, , 3, 3
+	loop
+	
+	gfilter 0
+	
+	gmode 3, , , malpha
+	
+	color 255, 255, 255
+	if (malpha == 255) {
+		line 100, 460, 460, 460
+	} else {
+		grect 280, 460, , 360, 1
+	}
+	if (onRect) {
+		color 255
+	}
+	grect 450, 447, 0.0006 * time, 16, 16
+	
+	gmulcolor
+	if (onMenu) {
+		drawMenu
+	}
+	drawStrR "DANCING STARS", 430, 440
+	
+	redraw 1
+	
+	await 1
+	
+	goto *mainLoop
+	
+#deffunc hsvmulcolor int _h, int _s, int _v
+	hsvcolor _h, _s, _v
+	gmulcolor ginfo_r, ginfo_g, ginfo_b
+	return

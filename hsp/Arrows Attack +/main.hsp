@@ -1,0 +1,549 @@
+;$a>ax_aaa.ax
+
+; HSP 3.5b5
+
+#packopt xsize 640
+#packopt ysize 480
+#packopt name "aaa"
+
+#include "hsp3dish.as"
+
+
+#module
+
+#deffunc initFont
+
+	r2 = sqrt(2) * 1.06 * 2
+	r2h = r2 / 2
+	a0 = 0.0
+	a45 = M_PI / 4
+	a90 = M_PI / 2
+	a135 = M_PI * 3 / 4
+
+	#define PP_NUM 4
+
+	ddim pp, PP_NUM, 30
+	; x,y,len,ang
+
+	pp(0, 0) =  0.0,  1.0, 2.0, a0
+	pp(0, 1) =  0.0,  0.0, 2.0, a0
+	pp(0, 2) =  0.0, -1.0, 2.0, a0
+
+	pp(0, 3) = -1.0,  0.0, 2.0, a90
+	pp(0, 4) =  0.0,  0.0, 2.0, a90
+	pp(0, 5) =  1.0,  0.0, 2.0, a90
+
+	pp(0, 6) = -0.5,  1.0, 1.0, a0
+	pp(0, 7) =  0.5,  1.0, 1.0, a0
+	pp(0, 8) = -0.5,  0.0, 1.0, a0
+	pp(0, 9) =  0.5,  0.0, 1.0, a0
+	pp(0,10) = -0.5, -1.0, 1.0, a0
+	pp(0,11) =  0.5, -1.0, 1.0, a0
+
+	pp(0,12) = -1.0,  0.5, 1.0, a90
+	pp(0,13) = -1.0, -0.5, 1.0, a90
+	pp(0,14) =  0.0,  0.5, 1.0, a90
+	pp(0,15) =  0.0, -0.5, 1.0, a90
+	pp(0,16) =  1.0,  0.5, 1.0, a90
+	pp(0,17) =  1.0, -0.5, 1.0, a90
+
+	pp(0,18) =  0.0,  0.0,  r2, a45
+	pp(0,19) =  0.0,  0.0,  r2, a135
+
+	pp(0,20) = -0.5,  0.5, r2h, a45
+	pp(0,21) = -0.5,  0.5, r2h, a135
+	pp(0,22) =  0.5,  0.5, r2h, a45
+	pp(0,23) =  0.5,  0.5, r2h, a135
+	pp(0,24) = -0.5, -0.5, r2h, a45
+	pp(0,25) = -0.5, -0.5, r2h, a135
+	pp(0,26) =  0.5, -0.5, r2h, a45
+	pp(0,27) =  0.5, -0.5, r2h, a135
+
+	pp(0,28) = -0.2,  0.8, 0.6, a90
+	pp(0,29) =  0.2,  0.8, 0.6, a90
+
+	; chr pp pp ...
+	f = {"
+	A 13 21 22 17 1
+	B 3 6 22 1 17 2
+	C 3 0 2
+	D 3 6 22 17 2
+	E 3 0 1 2
+	F 3 0 1
+	G 3 0 2 17 9
+	H 3 1 5
+	I 0 4 2
+	J 5 2 13
+	K 3 8 23 26
+	L 3 2
+	M 3 20 23 5
+	N 3 18 5
+	O 21 24 27 22
+	P 3 0 16 1
+	Q 21 24 27 22 26
+	R 3 0 16 1 26
+	S 7 21 1 27 10
+	T 0 4
+	U 3 2 5
+	V 12 24 27 16
+	W 3 25 26 5
+	X 18 19
+	Y 20 23 15
+	Z 0 19 2
+	0 0 3 2 5
+	1 4
+	2 0 16 1 13 2
+	3 0 5 1 2
+	4 12 1 5
+	5 0 12 1 17 2
+	6 3 2 17 1
+	7 0 5
+	8 0 3 2 5 1
+	9 0 12 1 5
+	. 28 29
+	"}
+
+	notesel f
+	lnum = notemax
+	
+	sdim asciiMap, 256
+	dim prmNum, lnum + 1
+	dim startIdx, lnum + 1
+	
+	p = 0
+	repeat lnum
+		noteget ls, cnt
+		split ls, " ", res
+		n = stat - 1
+		i = cnt + 1
+		poke asciiMap, peek(res), i
+		prmNum(i) = n
+		startIdx(i) = p
+		p += n * PP_NUM
+	loop
+	
+	ddim fontData, p * PP_NUM
+	
+	p = 0
+	repeat lnum
+		noteget ls, cnt
+		split ls, " ", res
+		n = stat - 1
+		repeat n
+			i = cnt
+			repeat PP_NUM
+				fontData(p + i * PP_NUM + cnt) = pp(cnt, int(res(i + 1)))
+			loop
+		loop
+		p += n * PP_NUM
+	loop
+	
+	noteunsel
+	dim pp
+	dim f
+	
+	return
+
+#deffunc drawChar int _c, int _x, int _y, int _sz, int _w
+
+	idx = peek(asciiMap, _c)
+	if (idx == 0) {
+		return
+	}
+	s = startIdx(idx)
+	sz = _sz / 2
+	repeat prmNum(idx)
+		i = s + cnt * PP_NUM
+		grect fontData(i) * sz + _x, -fontData(i + 1) * sz + _y, fontData(i + 3), fontData(i + 2) * sz, _w
+	loop
+	return
+
+#deffunc drawStr str _m, int _x, int _y, int _sz, int _ls, int _w
+
+	m = _m
+	x = _x + (_sz + _w) / 2
+	y = _y + (_sz + _w) / 2
+	repeat strlen(m)
+		c = peek(m, cnt)
+		drawChar c, x, y, _sz, _w
+		x += _sz + _ls + _w
+	loop
+	return
+
+#deffunc drawStrC str _m, int _x, int _y, int _sz, int _ls, int _w
+
+	m = _m
+	n = strlen(m)
+	drawStr m, _x - ((_sz + _w) * n + _ls * (n - 1)) / 2, _y, _sz, _ls, _w
+	return
+
+#global
+
+
+#const global TIME_LIMIT 30000
+#const global TIME_READY 1000
+#const global REMAIN_NUM 30
+
+#enum SC_MAIN = 0
+#enum SC_TITLE
+#enum SC_READY
+#enum SC_MISS
+#enum SC_TIMEUP
+#enum SC_CLEAR
+
+#enum global SE_ARROW = 0
+#enum global SE_CLEAR = SE_ARROW + 4
+#enum global SE_MISS
+#enum global SE_NUM
+
+#const global PI_D2  M_PI / 2
+#const global PI_D4  M_PI / 4
+
+
+#module
+
+#deffunc initSe
+
+	vt = 1000, 990, 920, 800, 0
+	return
+
+#deffunc loadSe str _s, int _id
+
+	f = "se_" + _s + ".wav"
+	exist f
+	if (strsize >= 0) {
+		mmload f, _id
+	}
+	return
+
+#deffunc setVolAll int _v
+
+	repeat SE_NUM
+		mmvol cnt, -vt(_v)
+	loop
+	return
+
+#deffunc stopSeAll
+
+	repeat SE_NUM
+		mmstop cnt
+	loop
+	return
+
+#global
+
+
+*start
+
+	title "ARROWS ATTACK +"
+
+	initSe
+	loadSe "za", SE_ARROW + 0
+	loadSe "cti", SE_ARROW + 1
+	loadSe "pyun", SE_ARROW + 2
+	loadSe "gu", SE_ARROW + 3
+	loadSe "pylll", SE_CLEAR
+	loadSe "pililili", SE_MISS
+	vol = 2
+	setVolAll vol
+
+	initFont
+	initArrow
+	getreq time, SYSREQ_TIMER
+	changeScene SC_TITLE
+
+*mainLoop
+
+	getreq time, SYSREQ_TIMER
+	delta = time - preTime
+	preTime = time
+	sceneTime = time - startTime
+
+	stick key
+	if (key & 128) {
+		changeScene SC_TITLE
+		stopSeAll
+	}
+
+	switch scene
+	case SC_MAIN
+		frameCnt++
+		if (key & 15) {
+			if (key == (1 << nowNo)) {
+				poke arrowLog, REMAIN_NUM - remain, nowNo
+				remain--
+				if (remain == 0) {
+					mmplay SE_CLEAR
+					changeScene SC_CLEAR
+				} else {
+					setHitMarker nowNo
+					nowNo = rnd(40) / 10
+					mmplay SE_ARROW + nowNo
+					pTime = time
+				}
+			} else {
+				changeScene SC_MISS
+				mmplay SE_MISS
+				repeat 4
+					if (key >> cnt & 1) {
+						if (1 << nowNo >> cnt & 1) : else {
+							setHitMarker cnt
+							break
+						}
+					}
+				loop
+			}
+			hitTime = time
+		}
+		if (sceneTime >= TIME_LIMIT) {
+			changeScene SC_TIMEUP
+			mmplay SE_MISS
+		}
+		swbreak
+	case SC_READY
+		if (sceneTime >= readyTime) {
+			changeScene SC_MAIN
+			randomize
+			nowNo = rnd(4)
+			mmplay SE_ARROW + nowNo
+			pTime = time
+		}
+		swbreak
+	case SC_TITLE
+		if (key & 1) : if (vol > 0) : vol-- : setVolAll vol : mmplay SE_ARROW + 1
+		if (key & 4) : if (vol < 4) : vol++ : setVolAll vol : mmplay SE_ARROW + 1
+	default
+		if (key & 16) {
+			changeScene SC_READY
+			remain = REMAIN_NUM
+			frameCnt = 0
+			startCnt++
+			readyTime = TIME_READY + limit(500 - startCnt * 100, 0, 500) + rnd(100)
+			sdim arrowLog, REMAIN_NUM + 2
+			setHitMarker -1
+			stopSeAll
+		}
+	swend
+
+	redraw 0
+
+	dc = 240
+	switch scene
+	case SC_MISS
+	case SC_TIMEUP
+		color 255, 110, 90
+		boxf
+		if (sceneTime < 500) {
+			color dc, dc, dc
+			t = 500 - sceneTime
+			repeat t / 100
+				y = rnd(480)
+				grect 320, y, , 640, rnd(t / 30) / 5 + 1
+			loop
+		}
+		swbreak
+	case SC_CLEAR
+		color 90, 110, 255
+		boxf
+		if (sceneTime < 600) {
+			color dc, dc, dc
+			setease 160, 220, ease_cubic_out
+			s = getease(sceneTime, 600)
+			grect 320, 240, PI_D4, s, s
+			grect 320, 240, , sceneTime + 200, (600 - sceneTime) / 200
+			color 90, 110, 255
+			setease 60, 220, ease_cubic_out
+			s = getease(sceneTime, 600)
+			grect 320, 240, PI_D4, s, s
+		}
+		swbreak
+	default
+		dc = 80
+		color 250, 250, 250
+		boxf
+	swend
+	color dc, dc, dc
+
+	switch scene
+	case SC_MAIN
+		draw_fps
+		draw_time_remain_log sceneTime
+		drawHitMarker 0.03 * (time - hitTime)
+		draw_arrow_remainMark
+		swbreak
+	case SC_TITLE
+		repeat 4
+			r = PI_D2 * cnt
+			p = limitf(sin(0.0008 * sceneTime - PI_D2) * 80, -20, 30) + 40
+			drawArrow cnt, cos(r) * p + 320, sin(r) * p + 240, 60
+		loop
+		repeat vol * 2
+			grect 320 + (cnt / 2) * ((cnt \ 2) * 2 - 1) * 30, 410, , 14, 4
+		loop
+		draw_strTopBottom "ARROWS ATTACK"
+		swbreak
+	case SC_READY
+		draw_time_remain_log 0
+		drawReadyMark sceneTime, readyTime
+		drawStrC "READY", 320, 230, 20, 4, 2
+		swbreak
+	case SC_CLEAR
+		draw_fps
+		draw_time_remain_log resultTime
+		draw_strTopBottom "CLEAR"
+		swbreak
+	case SC_MISS
+		draw_fps
+		drawHitMarker 0
+		draw_time_remain_log resultTime
+		draw_arrow_remainMark
+		draw_strTopBottom "MISS"
+		swbreak
+	case SC_TIMEUP
+		draw_fps
+		draw_time_remain_log resultTime
+		draw_arrow_remainMark
+		draw_strTopBottom "TIMES UP"
+		swbreak
+	swend
+
+	redraw
+
+	await 1
+
+	goto *mainLoop
+
+
+#deffunc changeScene int _s
+
+	resultTime = sceneTime
+	scene = _s
+	sceneTime = 0
+	startTime = time
+	return
+
+
+#deffunc draw_time_remain_log int _t
+
+	drawStr strf("%5.2f", limitf(_t, 0, TIME_LIMIT) / 1000), 450, 70, 20, 3, 2
+	drawStr strf("%d", remain), 112, 390, 20, 3, 2
+	repeat limit(REMAIN_NUM - remain, 0, 30)
+		drawArrow peek(arrowLog, cnt), 118 + cnt * 14, 426, 6
+	loop
+	return
+
+
+#deffunc draw_fps
+
+	if (scene == SC_MAIN) {
+		t = limit(double(delta) / 16.666 * 20, 0, 120)
+	} else {
+		t = frameCnt * 1000 / resultTime
+		drawStr strf("%4d", t), 522, 105, 10, 2, 1
+		t = 1200 / t
+	}
+	boxf 572 - t, 98, 572, 100
+	return
+	
+
+#deffunc draw_arrow_remainMark
+
+	drawRemainMark remain, 8
+	drawArrow nowNo, 320, 240, limitf(160.0 - 0.4 * (time - pTime), 110, 160)
+	return
+
+
+#deffunc draw_strTopBottom str _s
+
+	drawStrC _s, 320, 8, 40, 5, 2
+	drawStrC "SPACE KEY TO START", 320, 444, 28, 5, 2
+	return
+
+
+
+#module
+
+#deffunc vecRot var _ox, var _oy, double _ix, double _iy, double _r
+
+	_ox = _ix * cos(_r) - _iy * sin(_r)
+	_oy = _ix * sin(_r) + _iy * cos(_r)
+	return
+
+#deffunc drawPoly int _i, array _vx, array _vy, int _x, int _y, double _s
+
+	repeat 4
+		x1(cnt) = 0 + (_s * _vx(_i + cnt) + _x)
+		y1(cnt) = 0 + (_s * _vy(_i + cnt) + _y)
+	loop
+	gsquare -1, x1, y1
+	return
+
+#global
+
+#module
+
+#deffunc initArrow
+
+	ddim vx, 32
+	ddim vy, 32
+	vx = -1.0, -1.0, -0.2, -0.2,  -0.2,  1.0,  1.0, -0.2
+	vy =  0.0,  0.0,  0.8, -0.8,   0.2,  0.2, -0.2, -0.2
+	repeat 24
+		vecRot vx(cnt + 8), vy(cnt + 8), vx(cnt), vy(cnt), PI_D2
+	loop
+	return
+
+#deffunc drawArrow int _i, int _x, int _y, double _s
+
+	drawPoly _i * 8,     vx, vy, _x, _y, _s
+	drawPoly _i * 8 + 4, vx, vy, _x, _y, _s
+	return
+
+#global
+
+#module
+
+#deffunc setHitMarker int _i
+
+	id = _i
+	return
+
+#deffunc drawHitMarker double _t
+
+	if (id < 0) : return
+	t = limitf(0.1 * _t, 0, 0.2)
+	x = 0.0, 0.8, 1.0 - t, 0.2 - t,   x,  x(1),  x(2),  x(3)
+	y = 0.0, 0.8, 0.8, 0.0,  -y, -y(1), -y(2), -y(3)
+	r = PI_D2 * id
+	repeat 8
+		vecRot x(cnt), y(cnt), x(cnt), y(cnt), r
+	loop
+	px = cos(r + M_PI) * 176 + 320
+	py = sin(r + M_PI) * 176 + 240
+	drawPoly 0, x, y, px, py, 60
+	drawPoly 4, x, y, px, py, 60
+	return
+
+#global
+
+#module
+
+#const GAUGE_NUM   REMAIN_NUM
+#const PI_DGN      M_PI * 2 / GAUGE_NUM
+
+#deffunc drawRemainMark int _n, int _sz, int _rev
+
+	s = (_rev == 1) * 2 - 1
+	r = 158
+	repeat _n
+		a = PI_DGN * s * cnt - PI_D2
+		grect cos(a) * r + 320, sin(a) * r + 240, PI_D4, _sz, _sz
+	loop
+	return
+
+#deffunc drawReadyMark int _t, int _rt
+
+	drawRemainMark limit(_t * GAUGE_NUM / _rt, 0, GAUGE_NUM), 10, 1
+	return
+
+#global

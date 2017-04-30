@@ -1,0 +1,251 @@
+;$a>ax_stgjs.ax
+
+; HSP 3.5b5
+
+#packopt xsize 640
+#packopt ysize 480
+
+#define CAPTION "Star: The Gathering JS"
+
+#include "hsp3dish.as"
+#include "../common/font.hsp"
+
+
+#module
+
+#const PI_D32  M_PI / 32
+
+#deffunc drawCircle int _x, int _y, double _r
+
+	pos cos(0) * _r + _x, sin(0) * _r + _y
+	repeat 64, 1
+		line cos(PI_D32 * cnt) * _r + _x, sin(PI_D32 * cnt) * _r + _y
+	loop
+	return
+
+#deffunc timer var _dt, var _fps, int _udms, int _id
+
+	getreq t, SYSREQ_TIMER
+	_dt = t - pt(_id)
+	pt(_id) = t
+	tdt(_id) += _dt
+	fc(_id)++
+	if (tdt(_id) >= _udms) {
+		_fps = double(fc(_id)) / tdt(_id) * 1000
+		fc(_id) = 0
+		tdt(_id) = 0
+	}
+	return t
+
+#global
+
+
+*start
+
+	dim pt@dish_util, 16
+
+	title CAPTION
+
+	celload "star.png", 1
+	celdiv 1, 32, 32, 16, 16
+	
+	celload "box.png", 2
+
+	initFont 
+	loadFont "font.png"
+
+	gsel 0
+	starNum = 100
+	dim starTime, starNum
+	dim starTyte, starNum
+	ddim starPosX, starNum
+	ddim starPosY, starNum
+	ddim starPreV, starNum
+	ddim starVelX, starNum
+	ddim starVelY, starNum
+	ddim gstarPosX, starNum
+	ddim gstarPosY, starNum
+	fps = 60.0
+	
+*init
+	timer dt, fps, 500
+	nowTime = stat
+	dim gstarTime, starNum
+	repeat starNum
+		genStar cnt
+	loop
+	score = 0
+	n = 3
+	dim scoreT, n
+	dim scoreA, n
+	dim scoreX, n
+	dim scoreY, n
+	scoreIdx = 0
+	circleSize = 0.0
+	startTime = nowTime
+	ttime = nowTime
+*mainLoop
+	timer dt, fps, 500
+	nowTime = stat
+	stick key, 256 * scene
+	if (scene) {
+		remainTime = 20000 - (nowTime - startTime)
+		if (remainTime <= 0) {
+			remainTime = 0
+			scene = 0
+			ttime = nowTime
+		}
+		if (key & 16) || (key & 128) {
+			scene = 0
+			ttime = nowTime - 1000
+		}
+		if (key & 256) {
+			if (mlbDown == 0) {
+				ctime = nowTime
+			}
+			mlbDown = 1
+			circleSize = 130.0 - 4.0 / (double(nowTime - ctime) / 8000 + 0.04)
+		} else {
+			if (mlbDown) {
+				preScore = score
+				repeat starNum
+					x = mousex - starPosX(cnt)
+					y = mousey - starPosY(cnt)
+					if (sqrt(x * x + y * y) <= circleSize) {
+						if (scene) {
+							score++
+						}
+						gstarTime(gsIdx) = nowTime
+						gstarPosX(gsIdx) = starPosX(cnt)
+						gstarPosY(gsIdx) = starPosY(cnt)
+						gsIdx = (gsIdx + 1) \ starNum
+						genStar cnt
+					}
+				loop
+				t = score - preScore
+				if (t > 0) {
+					scoreT(scoreIdx) = nowTime
+					scoreA(scoreIdx) = t
+					scoreX(scoreIdx) = mousex
+					scoreY(scoreIdx) = mousey - 30
+					scoreIdx++
+					scoreIdx \= 3
+				}
+			}
+			mlbDown = 0
+			circleSize = 0.0
+		}
+	} else {
+		circleSize = 0.0
+		if (nowTime - ttime > 1000) {
+			if (key & 256) {
+				if (mlbDown == 0) {
+					scene = 1
+					goto *init
+				}
+			} else {
+				mlbDown = 0
+			}
+		}
+	}
+	repeat starNum
+		stime = nowTime - starTime(cnt)
+		v = 3.0 / (0.0000005 * stime + 0.002)
+		starPosX(cnt) += starVelX(cnt) * (starPreV(cnt) - v)
+		starPosY(cnt) += starVelY(cnt) * (starPreV(cnt) - v)
+		starPreV(cnt) = v
+		if (starPosX(cnt) < 80) {
+			starPosX(cnt) = 160.0 - starPosX(cnt)
+			starVelX(cnt) = -starVelX(cnt)
+		}
+		if (starPosX(cnt) > 560) {
+			starPosX(cnt) = 1120.0 - starPosX(cnt)
+			starVelX(cnt) = -starVelX(cnt)
+		}
+		if (starPosY(cnt) < 0) {
+			starPosY(cnt) = -starPosY(cnt)
+			starVelY(cnt) = -starVelY(cnt)
+		}
+		if (starPosY(cnt) > 480) {
+			starPosY(cnt) = 960.0 - starPosY(cnt)
+			starVelY(cnt) = -starVelY(cnt)
+		}
+	loop
+	redraw 0
+	color
+	boxf
+	gmode 0
+	gradf , , , , 1, $10243e, $220428
+	gmode 5, , , 255
+	repeat starNum
+		pos starPosX(cnt), starPosY(cnt)
+		celput 1
+	loop
+	repeat starNum
+		if (nowTime - gstarTime(cnt) < 170) {
+			et = nowTime - gstarTime(cnt)
+			pos gstarPosX(cnt), gstarPosY(cnt)
+			gmode 5, , , 20.0 * (180 - et) / 17 + 40
+			s = 0.02 * et + 1
+			celput 1, , s, s
+		}
+	loop
+	gmode 5, , , 255
+	repeat 3
+		if (nowTime - scoreT(cnt) < 1000) {
+			t = scoreA(cnt)
+			s = 1.4 + t / 10
+			y = scoreY(cnt) + 2.0 / (0.001 * (nowTime - scoreT(cnt)) + 0.03)
+			setStrAttr s, s, 1 + s * 0.8
+			drawStrC strf("+%d", t), scoreX(cnt), y
+		}
+	loop
+	color 255, 255, 255
+	drawCircle mousex, mousey, circleSize
+	gmode 3, , , 180 - scene * 60
+	abox 80,   0, 480, 30
+	abox 80, 450, 480, 30
+	gmode 5, , , 255
+	setStrAttr 3, 3, 4
+	drawStrR str(score), 250, 4
+	drawStrR strf("%.1f", double(remainTime) / 1000), 440, 4
+	setStrAttr 1, 1, 2
+	drawStrR strf("%d fps", fps), 558, 466
+	color 255, 255, 255
+	boxf 560 - dt * 2, 477, 558, 478
+	if (scene == 0) {
+		elptime = nowTime - ttime
+		gmode 3, , , sin(0.00095 * elptime) * 20 + 160
+		abox 80, 160, 480, 160
+		gmode 5, , , 255
+		setStrAttr 3, 3, 4
+		drawStrC CAPTION, 320, 190
+		if (elptime > 1000) {
+			y = limit(sin(0.00095 * elptime) * 10 * (elptime > 28000) + 270 ,0, 270)
+			setStrAttr 2, 2, 3
+			drawStrC "CLICK to start", 320, y
+		}
+	}
+	color 255, 255, 255
+	boxf 0, , 80
+	boxf 560
+	pos -100, 0
+	mes "0"
+	redraw
+	getreq t, SYSREQ_PLATFORM
+	await 1
+	goto *mainLoop
+
+
+#deffunc abox int _x, int _y, int _sx, int _sy
+	pos _x, _y
+	celput 2, , _sx, _sy
+	return
+
+#deffunc genStar int _id
+	starTime(_id) = nowTime
+	starPosX(_id) = double(rnd(480)) + 80
+	starPosY(_id) = double(rnd(480))
+	starVelX(_id) = (double(rnd(50)) / 50) * (rnd(2) * 2 - 1)
+	starVelY(_id) = (double(rnd(50)) / 50) * (rnd(2) * 2 - 1)
+	return

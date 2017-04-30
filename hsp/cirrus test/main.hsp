@@ -1,0 +1,243 @@
+;$a>ax_citest.ax
+
+#include "hsp3dish.as"
+#include "../common/font.hsp"
+
+#module
+
+#deffunc timer var _t, var _fps
+	getreq _t, SYSREQ_TIMER
+	dt += _t - pre
+	pre = _t
+	fcnt++
+	if (dt >= 500) {
+		fps = double(fcnt) / dt * 1000
+		fcnt = 0
+		dt = 0
+	}
+	_fps = fps
+	return
+ 
+#deffunc hsvmulcolor int _h, int _s, int _v
+	hsvcolor _h, _s, _v
+	gmulcolor ginfo_r, ginfo_g, ginfo_b
+	return
+
+#global
+
+
+#define GRP_NORMAL 1
+#define GRP_SELECT 2
+
+*start
+
+	getreq platform, SYSREQ_PLATFORM
+
+	qreset
+	
+	qmat , mat_wire, $cccccc, $cccccc
+	
+	initFont
+	loadFont "font.png"
+	setStrAttr 2, 2
+
+	celload "star.png"
+	img_star = stat
+	celdiv img_star, 32, 32, 16, 17
+	
+	; mmload "test.mp3", 0, 1, 400, 1653
+	mmload "se_pyun.wav", 1
+	mmload "se_pyu.wav", 2
+	mmload "se_py.wav", 3 : mmvol 3, -300
+	mmload "se_ti.wav", 4 : mmvol 4, -800
+	
+	; mmvol 0, -700
+	; mmplay 0
+	
+	sz = 8, 14, 22
+	
+	maxline = 24
+	sdim strbuf, 128, maxline
+	strbufline = 0
+	dim pregkey, 256
+	chrnum = 0
+	gkeytimer = 0
+	
+*mainLoop
+
+	timer time, fps
+	
+	frame++
+	gkeytimer++
+	
+	stick stk, -1
+	
+	gkey = ""
+	repeat 256
+		getkey k, cnt
+		if (k) {
+			gkeytimer = 0
+			gkey += "" + cnt + ", "
+			if (pregkey(cnt) == 0) || (pregkey(cnt) == 39) {
+				if (cnt == 8) {
+					delChr
+				}
+				if (cnt == 13) {
+					nextLine
+				}
+				if (cnt == 32) {
+					addChr " "
+				}
+				if ((cnt >= 48) && (cnt <= 57)) {
+					addChr str(cnt - 48)
+				}
+				if ((cnt >= 65) && (cnt <= 90)) {
+					getkey s, 16
+					addChr strf("%c", cnt + 32 * (s == 0))
+				}
+			}
+			pregkey(cnt)++
+			if (pregkey(cnt) == 40) : pregkey(cnt) -= 2
+		} else {
+			pregkey(cnt) = 0
+		}
+	loop
+	if (strlen(gkey) >= 2) {
+		poke gkey, strlen(gkey) - 2
+	}
+	
+	if (frame \ 10 == 0) && (fps >= 55) {
+		s = 3.8 * ((rnd(100) > 80) + 1)
+		qaddpoly id, 4, 60, 24, 0, s, s
+		if (id >= 0) {
+			qspeed id, 0.01 * rnd(100) - 0.5, 0, 0.01
+			qgroup id, GRP_NORMAL
+			qmat id, mat_wire, $cccccc, $cccccc
+			blocknum++
+		}
+	}
+	
+	if (frame < 70) {
+		arate = 0.01 * frame
+	} else {
+		arate = cos(0.004 * (frame - 100)) * 0.1 + 0.6
+	}
+	
+	qcnvaxis imx, imy, mousex, mousey, 1
+	
+	qinner id, imx, imy
+	if (id >= 1) : if (stk & 256) {
+		qgetgroup id, g, dummy, dummy
+		if (g != GRP_SELECT) {
+			qmat id, mat_wire2, $ffff00, $ffff00
+			qgroup id, GRP_SELECT
+			qgetpos id, x, y, a
+			mmplay 2
+			mmpan 2, (x - 60) * 20
+		}
+	}
+	
+	if (stk & 256) : else {
+		qfind GRP_SELECT, stat_active
+		repeat
+			qnext id
+			if (id < 0) {
+				if (cnt) {
+					mmplay 1
+				}
+				break
+			}
+			qdel id
+			blocknum--
+		loop
+	}
+	
+	if (stk & 512) {
+		qblast imx, imy
+	}
+	
+	qexec
+	
+	redraw 0
+	
+	gmode
+	gradf 0, 0, 480, 800, 1, $406080, $406040
+
+	qdraw 1
+
+	gmode 3, 480, 800, arate * 140
+	color
+	grect 240, 400
+	
+	gfilter 1
+	repeat 3
+		gmode 5, , , arate * (220 - cnt * 40)
+		hsvmulcolor ((frame + 60 * cnt) / 3) \ 192, 180, 180
+		pos 240, 400
+		celput img_star, 0, sz(cnt), sz(cnt), 0.003 * (3 - cnt) * frame + 0.006
+	loop
+	
+	gfilter 0
+	gmulcolor
+	gmode 3, , , 255
+	
+	drawStr strf("FPS: %4.1f", fps), 10, 10
+	drawStr strf("Block num: %d", blocknum), 10, 34
+	drawStr strf("Letter num: %d", chrnum), 10, 58
+	
+	drawStr strf("stick: $%08X", stk), 10, 100
+	drawStr strf("getkey: %s", gkey), 10, 124
+	
+	repeat strbufline + 1
+		if (cnt == strbufline) && ((gkeytimer \ 40) < 20) {
+			ts = strbuf(cnt) + "_"
+		} else {
+			ts = strbuf(cnt)
+		}
+		drawStr ts, 30, 170 + cnt * 24
+	loop
+
+	redraw 1
+	
+	if (platform == 0) {
+		await 15
+	} else {
+		await 1
+	}
+	
+	goto *mainLoop
+
+#deffunc nextLine
+	if (strbufline + 1 < maxline) {
+		strbufline++
+		return 1
+	}
+	return 0
+
+#deffunc addChr str _c
+	if (getStrWidth(strbuf(strbufline) + _c) > 420) {
+		nextLine
+		if (stat == 0) : return
+	}
+	strbuf(strbufline) += _c
+	chrnum++
+	mmplay 3
+	return
+
+#deffunc backLine
+	if (strbufline > 0) {
+		strbufline--
+		mmplay 4
+	}
+	return
+	
+#deffunc delChr
+	ln = strlen(strbuf(strbufline))
+	if (ln > 0) {
+		poke strbuf(strbufline), ln - 1
+		chrnum--
+		mmplay 4
+	} else {
+		backLine
+	}
+	return

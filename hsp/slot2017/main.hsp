@@ -1,0 +1,210 @@
+;$a>ax_slot2017.ax
+
+#include "hsp3dish.as"
+
+	celload "img_reel.png", 1
+	celdiv 1, 12, 12
+	spaceid = 1, 7, 11, 16, 21
+	rectx = 10, 155, 155, 10
+	recty = 140, 140, 230, 230
+	rectx(4) = 165, 310, 310, 165
+	recty(4) = 140, 140, 180, 180
+	rectx(8) = 165, 310, 310, 165
+	recty(8) = 190, 190, 230, 230
+	btns = "START", "STOP", "RESTART"
+	pidxs = 1, 0, 8, 1, 16, 16, 25, 0, 14, 5, 23, 0, 25, 5, 1, 18, 0, 29, 27, 28, 34
+	gosub *init
+	goto *mainLoop
+
+*init
+	getreq timer, SYSREQ_TIMER
+	ptimer = timer
+	btnstr = "", "SPEED UP", "SPEED DOWN"
+	ddim rposy, 21
+	dim rstat, 21
+	dim bstat, 3
+	curidx = 0
+	spd = 0.5
+	timer = 0
+	ppap = 0
+	return
+
+*mainLoop
+	getreq t, SYSREQ_TIMER
+	dt = t - ptimer
+	ptimer = t
+	
+	stick key
+	
+	
+	redraw 0
+	
+	color 255, 255, 255
+	boxf
+	
+	if (scene == 1) {
+		timer += dt
+	}
+	btnstr = btns(scene)
+
+	repeat 3
+		i = cnt * 4
+		x = mousex
+		y = mousey
+		if (x >= rectx(i)) && (x <= rectx(i + 1)) && (y >= recty(i)) && (y <= recty(i + 2)) {
+			if (key & 256) {
+				if (cnt == 0) {
+					stopReel
+				} else {
+					changeSpeed -((cnt - 1) * 2 - 1)
+				}
+				bstat(cnt) = 2
+			} else {
+				bstat(cnt) = 1
+			}
+		} else {
+			bstat(cnt) = 0
+		}
+	loop
+
+	if (scene > 0) {
+		if (key & 128) {
+			gosub *init
+			scene = 0
+		}
+	}
+	if (key & 16) {
+		stopReel
+		bstat(0) = 2
+	}
+	if (key & 2) {
+		changeSpeed 1
+		bstat(1) = 2
+	}
+	if (key & 8) {
+		changeSpeed -1
+		bstat(2) = 2
+	}
+	
+	if (scene != 2) {
+		color 180, 180, 180
+		line 320, 90, 0, 90
+	}
+	
+	sid = 0
+	gmode 3, 12, 432, 255
+	repeat 21
+		i = cnt
+		if (i == spaceid(sid)) : sid++ : continue
+		if (rstat(i) == 0) {
+			rposy(i) += double(dt) * spd / 30
+			rposy(i) \= 432
+			y = rposy(i)
+		} else {
+			y = (rstat(i) - 1) * 12 + 6
+		}
+		repeat 3
+			pos 14 + 14 * i, 90 + y - 432 * cnt
+			gcopy 1
+		loop
+	loop
+	
+	gmode 5,,, 100 + (scene == 2) * 155
+	color 255, 255, 255
+	repeat 3
+		s = 84 - cnt * 12
+		grect 160, 42 - cnt * 6, , 320, s
+		grect 160, 168 + cnt * 6, , 320, s + 60
+	loop
+
+	if (scene > 0) {
+		gmode 3,,,255
+		repeat 2
+			pos 14 + 14 * curidx, 48 + 74 * cnt
+			celput 1, 36 + cnt
+		loop
+	}
+
+	gmode 3,,,100
+	repeat 3
+		i = cnt * 4
+		switch bstat(cnt)
+		case 0 : color 255, 255, 255 : swbreak
+		case 1 : color 220, 240, 230 : swbreak
+		case 2 : color 255, 200, 200 : swbreak
+		swend
+		boxf rectx(i), recty(i), rectx(i + 1), recty(i + 2)
+		color
+		pos rectx(i), recty(i)
+		repeat 4, 1
+			j = cnt \ 4
+			line rectx(i + j), recty(i + j)
+		loop
+		pos rectx(i) + 2, recty(i) + 2
+		mesf btnstr(cnt), 1
+	loop
+	
+	gmode 3,,,100 + (scene == 2) * 150
+	pos 18, 14
+	mesf strf("%8.2f", double(timer) / 1000), 2
+	
+	if (ppap) {
+		gmode 3, , , 100
+		color 200, 200, 100
+		grect 160, 120, , 320, 240
+	}
+
+	redraw 1
+	await 1
+	goto *mainLoop
+
+#deffunc stopReel
+	if (scene == 1) {
+		rstat(curidx) = int(rposy(curidx)) / 12 + 1
+		curidx++
+		if (curidx == 21) {
+			scene = 2
+			p = 0
+			repeat 21
+				if (rstat(cnt) == pidxs(cnt)) : p++
+				if (p == 21) {
+					ppap = 1
+				}
+			loop
+		}
+		foreach spaceid
+			if (curidx == spaceid(cnt)) : curidx++ : break
+		loop
+	} else {
+		gosub *init
+		scene = 1
+	}
+	return
+
+#deffunc changeSpeed int _c
+	spd = limitf(spd + 0.5 * _c, 0.5, 10)
+	return
+
+#deffunc mesf str _m, int _s
+	m = _m
+	ls = 1
+	cs = 12
+	x = ginfo_cx
+	y = ginfo_cy
+	repeat strlen(m)
+		c = peek(m, cnt)
+		if (c >= 48) && (c <= 57) {
+			c = 57 - c
+		} else : if (c >= 65) && (c <= 90) {
+			c = 100 - c
+		} else : if (c == 46) {
+			c = 38
+		} else {
+			x += (ls + cs) * _s
+			continue
+		}
+		pos x, y
+		celput 1, c, _s, _s
+		x += (ls + cs) * _s
+	loop
+	return
