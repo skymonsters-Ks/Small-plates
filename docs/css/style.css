@@ -45,6 +45,10 @@ canvas.emscripten {
 #stat {
 	margin: 40px auto 0px;
 	width: 320px;
+	position: relative;
+	top: 0px;
+	left: 0px;
+	z-index: 10000;
 }
 
 #status {
