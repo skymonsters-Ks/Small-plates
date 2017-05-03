@@ -50,6 +50,7 @@
 	mmload "se_pyu.wav", 2
 	mmload "se_py.wav", 3 : mmvol 3, -300
 	mmload "se_ti.wav", 4 : mmvol 4, -800
+	mmload "se_za.wav", 5 : mmvol 5, -300
 	
 	; mmvol 0, -700
 	; mmplay 0
@@ -79,22 +80,44 @@
 			gkeytimer = 0
 			gkey += "" + cnt + ", "
 			if (pregkey(cnt) == 0) || (pregkey(cnt) == 39) {
-				if (cnt == 8) {
-					delChr
-				}
-				if (cnt == 13) {
-					nextLine
-				}
-				if (cnt == 32) {
-					addChr " "
-				}
-				if ((cnt >= 48) && (cnt <= 57)) {
-					addChr str(cnt - 48)
-				}
+				getkey shift, 16
+				getkey ctrl, 17
 				if ((cnt >= 65) && (cnt <= 90)) {
-					getkey s, 16
-					addChr strf("%c", cnt + 32 * (s == 0))
+					addChr strf("%c", cnt + 32 * (shift == 0))
 				}
+				switch cnt
+				case 8
+				case 46
+					if (ctrl) : delLine : else : delChr
+					swbreak
+				case 13
+					nextLine
+					swbreak
+				case 32
+					addChr " "
+					swbreak
+				case 48 : if (shift) {             } else { addChr "0" } swbreak
+				case 49 : if (shift) { addChr "!"  } else { addChr "1" } swbreak
+				case 50 : if (shift) { addChr "\"" } else { addChr "2" } swbreak
+				case 51 : if (shift) { addChr "#"  } else { addChr "3" } swbreak
+				case 52 : if (shift) { addChr "$"  } else { addChr "4" } swbreak
+				case 53 : if (shift) { addChr "%"  } else { addChr "5" } swbreak
+				case 54 : if (shift) { addChr "&"  } else { addChr "6" } swbreak
+				case 55 : if (shift) { addChr "\'" } else { addChr "7" } swbreak
+				case 56 : if (shift) { addChr "("  } else { addChr "8" } swbreak
+				case 57 : if (shift) { addChr ")"  } else { addChr "9" } swbreak
+				case 186 : if (shift) { addChr "*"  } else { addChr ":" } swbreak
+				case 187 : if (shift) { addChr "+"  } else { addChr ";" } swbreak
+				case 188 : if (shift) { addChr "<"  } else { addChr "," } swbreak
+				case 189 : if (shift) { addChr "="  } else { addChr "-" } swbreak
+				case 190 : if (shift) { addChr ">"  } else { addChr "." } swbreak
+				case 191 : if (shift) { addChr "?"  } else { addChr "/" } swbreak
+				case 192 : if (shift) { addChr "`"  } else { addChr "@" } swbreak
+				case 219 : if (shift) { addChr "{"  } else { addChr "[" } swbreak
+				case 220 : if (shift) { addChr "_"  } else { addChr "\\" } swbreak
+				case 221 : if (shift) { addChr "}"  } else { addChr "]" } swbreak
+				case 222 : if (shift) { addChr "~"  } else { addChr "^" } swbreak
+				swend
 			}
 			pregkey(cnt)++
 			if (pregkey(cnt) == 40) : pregkey(cnt) -= 2
@@ -196,7 +219,7 @@
 		}
 		drawStr ts, 30, 170 + cnt * 24
 	loop
-
+	
 	redraw 1
 	
 	if (platform == 0) {
@@ -210,18 +233,21 @@
 #deffunc nextLine
 	if (strbufline + 1 < maxline) {
 		strbufline++
+		mmplay 5
 		return 1
 	}
 	return 0
 
-#deffunc addChr str _c
-	if (getStrWidth(strbuf(strbufline) + _c) > 420) {
+#deffunc addChr str _c, local _sp
+	_sp = getStrWidth(strbuf(strbufline) + _c)
+	if (_sp > 420) {
 		nextLine
 		if (stat == 0) : return
 	}
 	strbuf(strbufline) += _c
 	chrnum++
 	mmplay 3
+	mmpan 3, 5.6 * (_sp - 200)
 	return
 
 #deffunc backLine
@@ -240,4 +266,18 @@
 	} else {
 		backLine
 	}
+	return
+	
+#deffunc delLine
+	ln = strlen(strbuf(strbufline))
+	if (ln == 0) {
+		backLine
+		ln = strlen(strbuf(strbufline))
+		if (ln == 0) : return
+	}
+	repeat ln
+		poke strbuf(strbufline), ln - 1 - cnt
+		chrnum--
+	loop
+	mmplay 4
 	return
