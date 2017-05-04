@@ -45,15 +45,15 @@
 	img_star = stat
 	celdiv img_star, 32, 32, 16, 17
 	
-	; mmload "test.mp3", 0, 1, 400, 1653
+	mmload "bgm_aqtia.ogg", 0, 1, 9.9995
 	mmload "se_pyun.wav", 1
 	mmload "se_pyu.wav", 2
 	mmload "se_py.wav", 3 : mmvol 3, -300
 	mmload "se_ti.wav", 4 : mmvol 4, -800
 	mmload "se_za.wav", 5 : mmvol 5, -300
 	
-	; mmvol 0, -700
-	; mmplay 0
+	mmvol 0, -700
+	mmplay 0
 	
 	sz = 8, 14, 22
 	
@@ -254,18 +254,22 @@
 	if (strbufline > 0) {
 		strbufline--
 		mmplay 4
+		mmpan 4
 	}
 	return
 	
-#deffunc delChr
+#deffunc delChr local _sp
 	ln = strlen(strbuf(strbufline))
-	if (ln > 0) {
-		poke strbuf(strbufline), ln - 1
-		chrnum--
-		mmplay 4
-	} else {
+	if (ln == 0) {
 		backLine
+		ln = strlen(strbuf(strbufline))
+		if (ln == 0) : return
 	}
+	_sp = getStrWidth(strbuf(strbufline))
+	poke strbuf(strbufline), ln - 1
+	chrnum--
+	mmplay 4
+	mmpan 4, 5.6 * (_sp - 200)
 	return
 	
 #deffunc delLine
@@ -280,4 +284,5 @@
 		chrnum--
 	loop
 	mmplay 4
+	mmpan 4
 	return
