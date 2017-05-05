@@ -114,10 +114,10 @@
 *start
 	
 	initFont
-	loadFont "font01.png"
+	loadFont "f_reqt8x8.png"
 	setStrAttr 2, 2, 3
 
-	celload "star.png"
+	celload "img_star.png"
 	img_star = stat
 	celdiv stat, , , 16, 16
 	

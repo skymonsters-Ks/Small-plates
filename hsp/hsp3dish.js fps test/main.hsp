@@ -32,11 +32,11 @@
 
 	dim pt@dish_util, 16
 
-	celload "star.png", 1
+	celload "img_star.png", 1
 	celdiv 1, 32, 32, 16, 16
 
 	initFont
-	loadFont "font.png"
+	loadFont "f_recp8x8.png"
 
 	gsel 0
 

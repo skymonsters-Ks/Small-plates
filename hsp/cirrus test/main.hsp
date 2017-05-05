@@ -3,6 +3,15 @@
 #include "hsp3dish.as"
 #include "../common/font.hsp"
 
+#define DAT_FONT "f_recp8x8.png"
+#define DAT_STAR "img_star.png"
+#define DAT_BGM "bgm_aqtia.ogg"
+#define DAT_SE_DELBLOCK "se_pyun.wav"
+#define DAT_SE_PICKBLOCK "se_pyu.wav"
+#define DAT_SE_SETCHAR "se_py.wav"
+#define DAT_SE_DELCHAR "se_ti.wav"
+#define DAT_SE_NEWLINE "se_za.wav"
+
 #module
 
 #deffunc timer var _t, var _fps
@@ -38,19 +47,19 @@
 	qmat , mat_wire, $cccccc, $cccccc
 	
 	initFont
-	loadFont "font.png"
+	loadFont DAT_FONT
 	setStrAttr 2, 2
 
-	celload "star.png"
+	celload DAT_STAR
 	img_star = stat
 	celdiv img_star, 32, 32, 16, 17
 	
-	mmload "bgm_aqtia.ogg", 0, 1, 9.9995
-	mmload "se_pyun.wav", 1
-	mmload "se_pyu.wav", 2
-	mmload "se_py.wav", 3 : mmvol 3, -300
-	mmload "se_ti.wav", 4 : mmvol 4, -800
-	mmload "se_za.wav", 5 : mmvol 5, -300
+	mmload DAT_BGM, 0, 1, 9.9995
+	mmload DAT_SE_DELBLOCK, 1
+	mmload DAT_SE_PICKBLOCK, 2
+	mmload DAT_SE_SETCHAR, 3 : mmvol 3, -300
+	mmload DAT_SE_DELCHAR, 4 : mmvol 4, -800
+	mmload DAT_SE_NEWLINE, 5 : mmvol 5, -300
 	
 	mmvol 0, -700
 	mmplay 0
