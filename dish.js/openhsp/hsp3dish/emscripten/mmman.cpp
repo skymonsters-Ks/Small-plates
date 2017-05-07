@@ -37,8 +37,8 @@ typedef struct MMM
 	char	*fname;			//	sound filename (sbstr)
 	// int		vol;
 	// int		pan;
-	int		start;
-	int		end;
+	double	start;
+	double	end;
 	
 	Mix_Chunk	*chunk;
 	int		channel;
@@ -120,7 +120,7 @@ int MMMan::SearchBank( int num )
 }
 
 
-MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, int start, int end )
+MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, double start, double end )
 {
 	int bank;
 	MMM *m;
@@ -228,7 +228,7 @@ int MMMan::BankLoad( MMM *mmm, char *fname )
 }
 
 
-int MMMan::Load( char *fname, int num, int opt, int start, int end )
+int MMMan::Load( char *fname, int num, int opt, double start, double end )
 {
 	//		Load sound to bank
 	//			opt : 0=normal/1=loop/2=wait/3=continuous

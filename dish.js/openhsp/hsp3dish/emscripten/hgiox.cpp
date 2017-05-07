@@ -58,6 +58,9 @@
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
+
+#include <emscripten.h>
+
 #endif
 
 #include "appengine.h"
@@ -110,6 +113,15 @@ static const GLfloat panelUVs[8]={
 #define RGBA2R(col) (FVAL_BYTE1 * ((col>>16)&0xff))
 #define RGBA2G(col) (FVAL_BYTE1 * ((col>> 8)&0xff))
 #define RGBA2B(col) (FVAL_BYTE1 * ((col    )&0xff))
+
+#define CHECK_BMSCR( bm ) \
+	if ( bm == NULL ) return;\
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
+#define CHECK_BMSCR_RES( bm, res ) \
+	if ( bm == NULL ) return res;\
+	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+
 
 //	グラフィックス設定
 static int _bgsx, _bgsy;	//背景サイズ
@@ -718,26 +730,27 @@ int hgio_stick( int actsw )
 {
 	int ckey = 0;
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
-	if ( get_key_state(SDLK_UP) )    ckey|=1<<1;		// [up]
-	if ( get_key_state(SDLK_RIGHT) ) ckey|=1<<2;		// [right]
-	if ( get_key_state(SDLK_DOWN) )  ckey|=1<<3;		// [down]
-	if ( get_key_state(SDLK_SPACE) ) ckey|=1<<4;		// [spc]
-	if ( get_key_state(SDLK_RETURN) )ckey|=1<<5;		// [ent]
-	if ( get_key_state(SDLK_LCTRL) || get_key_state(SDLK_RCTRL) ) ckey|=1<<6;		// [ctrl]
-	if ( get_key_state(SDLK_ESCAPE) )ckey|=1<<7;	// [esc]
-	if ( mouse_btn & SDL_BUTTON_LMASK ) ckey|=1<<8;	// mouse_l
-	if ( mouse_btn & SDL_BUTTON_RMASK ) ckey|=1<<9;	// mouse_r
-	if ( get_key_state(SDLK_TAB) )   ckey|=1<<10;	// [tab]
+	if ( get_key_state(SDLK_LEFT) )     ckey|=1<<0;
+	if ( get_key_state(SDLK_UP) )       ckey|=1<<1;
+	if ( get_key_state(SDLK_RIGHT) )    ckey|=1<<2;
+	if ( get_key_state(SDLK_DOWN) )     ckey|=1<<3;
+	if ( get_key_state(SDLK_SPACE) )    ckey|=1<<4;
+	if ( get_key_state(SDLK_RETURN) )   ckey|=1<<5;
+	if ( get_key_state(SDLK_LCTRL) ||
+	     get_key_state(SDLK_RCTRL) )    ckey|=1<<6;
+	if ( get_key_state(SDLK_ESCAPE) )   ckey|=1<<7;
+	if ( mouse_btn & SDL_BUTTON_LMASK ) ckey|=1<<8;
+	if ( mouse_btn & SDL_BUTTON_RMASK ) ckey|=1<<9;
+	if ( get_key_state(SDLK_TAB) )      ckey|=1<<10;
 	
-	if ( get_key_state(SDLK_z) )     ckey|=1<<11;
-	if ( get_key_state(SDLK_x) )     ckey|=1<<12;
-	if ( get_key_state(SDLK_c) )     ckey|=1<<13;
-	
-	if ( get_key_state(SDLK_a) )     ckey|=1<<14;
-	if ( get_key_state(SDLK_w) )     ckey|=1<<15;
-	if ( get_key_state(SDLK_d) )     ckey|=1<<16;
-	if ( get_key_state(SDLK_s) )     ckey|=1<<17;
+	if ( get_key_state(SDLK_z) )        ckey|=1<<11;
+	if ( get_key_state(SDLK_x) )        ckey|=1<<12;
+	if ( get_key_state(SDLK_c) )        ckey|=1<<13;
+
+	if ( get_key_state(SDLK_a) )        ckey|=1<<14;
+	if ( get_key_state(SDLK_w) )        ckey|=1<<15;
+	if ( get_key_state(SDLK_d) )        ckey|=1<<16;
+	if ( get_key_state(SDLK_s) )        ckey|=1<<17;
 #else
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
@@ -1056,8 +1069,7 @@ void hgio_line( BMSCR *bm, float x, float y )
 	//		(bm==NULL の場合、ライン描画完了)
 	//		(ラインの座標は必要な数だけhgio_line2を呼び出す)
 	//
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
 
 	hgio_setColor( bm->color );
 
@@ -1107,8 +1119,7 @@ void hgio_boxf( BMSCR *bm, float x1, float y1, float x2, float y2 )
 {
 	//		矩形描画
 	//
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
 
 	ChangeTex( -1 );
 	hgio_setColor( bm->color );
@@ -1120,10 +1131,9 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 {
 	//		円描画
 	//
-	float xx,yy,rx,ry;
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
 
+	float xx,yy,rx,ry;
 	rx = ((float)abs(x2-x1))*0.5f;
 	ry = ((float)abs(y2-y1))*0.5f;
 	xx = ((float)x1) + rx;
@@ -1143,8 +1153,7 @@ void hgio_circle( BMSCR *bm, float x1, float y1, float x2, float y2, int mode )
 //
 void hgio_fillrot( BMSCR *bm, float x, float y, float sx, float sy, float ang )
 {
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
     
     GLfloat *flp;
 	GLfloat x0,y0,x1,y1,ofsx,ofsy;
@@ -1270,8 +1279,7 @@ void hgio_copy( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, BMSCR *
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
 	//		カレントポジション、描画モードはBMSCRから取得
 	//
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1356,8 +1364,7 @@ void hgio_copyrot( BMSCR *bm, short xx, short yy, short srcsx, short srcsy, floa
 	//		texid内の(xx,yy)-(xx+srcsx,yy+srcsy)を現在の画面に(psx,psy)サイズでコピー
 	//		カレントポジション、描画モードはBMSCRから取得
 	//
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1461,8 +1468,7 @@ void hgio_square_tex( BMSCR *bm, int *posx, int *posy, BMSCR *bmsrc, int *uvx, i
 {
 	//		四角形(square)テクスチャ描画
 	//
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR( bm );
 
 	TEXINF *tex = GetTex( bmsrc->texid );
 	if ( tex->mode == TEXMODE_NONE ) return;
@@ -1509,10 +1515,9 @@ void hgio_square( BMSCR *bm, int *posx, int *posy, int *color )
 {
 	//		四角形(square)単色描画
 	//
-    GLfloat *flp;
+	CHECK_BMSCR( bm );
 
-	if ( bm == NULL ) return;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+    GLfloat *flp;
 
     flp = vertf2D;
 
@@ -1561,8 +1566,7 @@ int hgio_celputmulti( BMSCR *bm, int *xpos, int *ypos, int *cel, int count, BMSC
 	int xx,yy;
 	int total;
 
-	if ( bm == NULL ) return 0;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR_RES( bm, 0 );
 
 	total =0;
 
@@ -1658,8 +1662,21 @@ int hgio_exec( char *msg, char *option, int mode )
     return 0;
 }
 
+
+#ifdef HSPEMSCRIPTEN
+char *hgio_prompt( char *str1, char *str2 )
+{
+	return (char*)EM_ASM_INT({
+		var result = window.prompt( Pointer_stringify($0), Pointer_stringify($1) );
+		if (result == null) result = '';
+		return (allocate(intArrayFromString(result), 'i8', ALLOC_STACK));
+		}, str1, str2);
+}
+#endif
+
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
+	int res = 0;
 #ifdef HSPNDK
 	j_dispDialog( str1, str2, mode );
 #endif
@@ -1667,7 +1684,24 @@ int hgio_dialog( int mode, char *str1, char *str2 )
     gb_dialog( mode, str1, str2 );
     //Alertf( str1 );
 #endif
-	return 0;
+#ifdef HSPEMSCRIPTEN
+	switch( mode ){
+	case 0:
+	case 1:
+		EM_ASM_({
+			window.alert( Pointer_stringify($0) );
+		}, str1);
+		res = 1;
+		break;
+	case 2:
+	case 3:
+		res = EM_ASM_INT({
+			return window.confirm( Pointer_stringify($0) ) ? 6 : 7;
+		}, str1);
+		break;
+	}
+#endif
+	return res;
 }
 
 char *hgio_sysinfo( int p2, int *res, char *outbuf )
@@ -2068,18 +2102,13 @@ int hgio_render_start( void )
 		hgio_setClear( (ccol>>16)&0xff, (ccol>>8)&0xff, (ccol)&0xff );
 		hgio_clear();
 	}
-#endif
-
-
 	hgio_reset();
-
-
-#if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 	if ( GetSysReq( SYSREQ_CLSMODE ) == CLSMODE_TEXTURE ) {
 		//テクスチャで消去
 	}
+#else
+	hgio_reset();
 #endif
-
 
 	drawflag = 1;
 	return 0;
@@ -2142,8 +2171,8 @@ void hgio_delscreen( BMSCR *bm )
 
 int hgio_redraw( BMSCR *bm, int flag )
 {
-	if ( bm == NULL ) return -1;
-	if ( bm->type != HSPWND_TYPE_MAIN ) throw HSPERR_UNSUPPORTED_FUNCTION;
+	CHECK_BMSCR_RES( bm, -1 );
+
 	hgio_screen( bm );
 
 	if ( flag & 1 ) {

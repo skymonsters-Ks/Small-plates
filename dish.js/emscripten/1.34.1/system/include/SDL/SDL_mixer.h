@@ -535,7 +535,7 @@ extern DECLSPEC int SDLCALL Mix_GroupNewer(int tag);
 */
 #define Mix_PlayChannel(channel,chunk,loops,start,end) Mix_PlayChannelTimed(channel,chunk,loops,start,end)
 /* The same as above, but the sound is played at most 'ticks' milliseconds */
-extern DECLSPEC int SDLCALL Mix_PlayChannelTimed(int channel, Mix_Chunk *chunk, int loops, int start, int end);
+extern DECLSPEC int SDLCALL Mix_PlayChannelTimed(int channel, Mix_Chunk *chunk, int loops, double start, double end);
 extern DECLSPEC int SDLCALL Mix_PlayMusic(Mix_Music *music, int loops);
 
 /* Fade in music or a channel over "ms" milliseconds, same semantics as the "Play" functions */

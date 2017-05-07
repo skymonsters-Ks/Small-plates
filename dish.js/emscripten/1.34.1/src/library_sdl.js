@@ -2768,8 +2768,8 @@ var LibrarySDL = {
     channelInfo.audio = audio;
     // TODO: handle N loops. Behavior matches Mix_PlayMusic
     audio.loop = loops != 0;
-	audio.loopStart = start / 1000;
-	audio.loopEnd = end / 1000;
+	audio.loopStart = start;
+	audio.loopEnd = end;
     audio.volume = channelInfo.volume;
 	audio.pan = channelInfo.pan;
     audio.play();

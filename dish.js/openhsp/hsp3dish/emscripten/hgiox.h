@@ -49,6 +49,7 @@ void hgio_copy( struct BMSCR *bm, short xx, short yy, short srcsx, short srcsy, 
 void hgio_copyrot( struct BMSCR *bm, short xx, short yy, short srcsx, short srcsy, float ofsx, float ofsy, struct BMSCR *bmsrc, float psx, float psy, float ang );
 #endif
 
+char *hgio_prompt( char *str1, char *str2 );
 bool hgio_getkey( int kcode );
 void hgio_setColorTex( int rval, int gval ,int bval ); 
 

@@ -348,6 +348,12 @@ static int devinfo_dummy;
 
 static int hsp3dish_devprm( char *name, char *value )
 {
+	if ( strcmp( name, "urlquery" )==0 ) {
+		EM_ASM_({
+			history.replaceState('', null, '?' + Pointer_stringify($0))
+		}, value);
+		return 0;
+	}
 	return -1;
 }
 
@@ -383,6 +389,11 @@ static char *hsp3dish_devinfo( char *name )
 	}
 	if ( strcmp( name, "error" )==0 ) {
 		return mem_devinfo->error;
+	}
+	if ( strcmp( name, "urlquery" )==0 ) {
+		return (char*)EM_ASM_INT_V({
+			return (allocate(intArrayFromString(window.location.search.substring(1)), 'i8', ALLOC_STACK));
+		});
 	}
 	return NULL;
 }

@@ -504,6 +504,12 @@ static void cmdfunc_dialog( void )
 	p1 = code_getdi( 0 );
 	ps = code_getds("");
 	ctx->stat = hgio_dialog( p1, stmp, ps );
+#ifdef HSPEMSCRIPTEN
+	if ( p1 == 64 ) {
+		strcpy( ctx->refstr, hgio_prompt( stmp, ps ));
+		ctx->stat = 1;
+	}
+#endif
 }
 
 
@@ -574,9 +580,9 @@ static int cmdfunc_extcmd( int cmd )
 		p1 = code_getdi( 0 );
 		p2 = code_getdi( 0 );
 #ifdef HSPEMSCRIPTEN
-		p3 = code_getdi( 0 );
-		p4 = code_getdi( 3600*10*1000 );
-		i = mmman->Load( fname, p1, p2, p3, p4 );
+		double st = code_getdd( 0.0 );
+		double ed = code_getdd( 36000.0 );
+		i = mmman->Load( fname, p1, p2, st, ed );
 #else
 		i = mmman->Load( fname, p1, p2 );
 #endif
