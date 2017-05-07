@@ -12,6 +12,8 @@
 #define mvscode 5		// minor version code
 #define vercode 0x3505	// version code
 
+#define modname "cirrus 1.2"
+
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします
 
@@ -20,7 +22,7 @@
 //		移植用のラベル
 //
 #define JPN			// IME use flag
-#define JPNMSG		// japanese message flag
+// #define JPNMSG		// japanese message flag
 
 //
 //	Debug mode functions

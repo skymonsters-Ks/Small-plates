@@ -375,7 +375,7 @@ extern DECLSPEC int SDLCALL Mix_UnregisterAllEffects(int channel);
  *  mode is a no-op, but this call will return successful in that case.
  *  Error messages can be retrieved from Mix_GetError().
  */
-extern DECLSPEC int SDLCALL Mix_SetPanning(int channel, Uint8 left, Uint8 right);
+extern DECLSPEC int SDLCALL Mix_SetPanning(int channel, int left, int right);
 
 
 /* Set the position of a channel. (angle) is an integer from 0 to 360, that
@@ -533,9 +533,9 @@ extern DECLSPEC int SDLCALL Mix_GroupNewer(int tag);
    If 'loops' is -1, loop inifinitely (~65000 times).
    Returns which channel was used to play the sound.
 */
-#define Mix_PlayChannel(channel,chunk,loops) Mix_PlayChannelTimed(channel,chunk,loops,-1)
+#define Mix_PlayChannel(channel,chunk,loops,start,end) Mix_PlayChannelTimed(channel,chunk,loops,start,end)
 /* The same as above, but the sound is played at most 'ticks' milliseconds */
-extern DECLSPEC int SDLCALL Mix_PlayChannelTimed(int channel, Mix_Chunk *chunk, int loops, int ticks);
+extern DECLSPEC int SDLCALL Mix_PlayChannelTimed(int channel, Mix_Chunk *chunk, int loops, int start, int end);
 extern DECLSPEC int SDLCALL Mix_PlayMusic(Mix_Music *music, int loops);
 
 /* Fade in music or a channel over "ms" milliseconds, same semantics as the "Play" functions */

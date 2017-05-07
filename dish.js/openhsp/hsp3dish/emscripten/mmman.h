@@ -29,10 +29,10 @@ public:
 	void DeleteBank( int bank );
 	int AllocBank( void );
 	int SearchBank( int num );
-	MMM *SetBank( int num, int flag, int opt, void *mempt, char *fname );
+	MMM *SetBank( int num, int flag, int opt, void *mempt, char *fname, int start, int end );
 
-	int Load( char *fname, int bank, int opt );
-	int Play( int bank );
+	int Load( char *fname, int bank, int opt, int start, int end );
+	int Play( int bank, int ch );
 	void StopNum( int num );
 	void Pause( void );
 	void Resume( void );
