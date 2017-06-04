@@ -8,7 +8,7 @@
 #define CAPTION "Star: The Gathering JS"
 
 #include "hsp3dish.as"
-#include "../common/font.hsp"
+#include "../common/imgfont.hsp"
 
 
 #module
@@ -51,8 +51,8 @@
 	
 	celload "img_pixel.png", 2
 
-	initFont 
-	loadFont "f_recp8x8.png"
+	initImgFont 
+	loadImgFont "f_recp8x8", "f_recp8x8.png"
 
 	gsel 0
 	starNum = 100
@@ -196,8 +196,8 @@
 			t = scoreA(cnt)
 			s = 1.4 + t / 10
 			y = scoreY(cnt) + 2.0 / (0.001 * (nowTime - scoreT(cnt)) + 0.03)
-			setStrAttr s, s, 1 + s * 0.8
-			drawStrC strf("+%d", t), scoreX(cnt), y
+			setImgFontAttr s, s, 1 + s * 0.8
+			drawImgStrC strf("+%d", t), scoreX(cnt), y
 		}
 	loop
 	color 255, 255, 255
@@ -206,11 +206,11 @@
 	abox 80,   0, 480, 30
 	abox 80, 450, 480, 30
 	gmode 5, , , 255
-	setStrAttr 3, 3, 4
-	drawStrR str(score), 250, 4
-	drawStrR strf("%.1f", double(remainTime) / 1000), 440, 4
-	setStrAttr 1, 1, 2
-	drawStrR strf("%d fps", fps), 558, 466
+	setImgFontAttr 3, 3, 4
+	drawImgStrR str(score), 250, 4
+	drawImgStrR strf("%.1f", double(remainTime) / 1000), 440, 4
+	setImgFontAttr 1, 1, 2
+	drawImgStrR strf("%d fps", fps), 558, 466
 	color 255, 255, 255
 	boxf 560 - dt * 2, 477, 558, 478
 	if (scene == 0) {
@@ -218,12 +218,12 @@
 		gmode 3, , , sin(0.00095 * elptime) * 20 + 160
 		abox 80, 160, 480, 160
 		gmode 5, , , 255
-		setStrAttr 3, 3, 4
-		drawStrC CAPTION, 320, 190
+		setImgFontAttr 3, 3, 4
+		drawImgStrC CAPTION, 320, 190
 		if (elptime > 1000) {
 			y = limit(sin(0.00095 * elptime) * 10 * (elptime > 28000) + 270 ,0, 270)
-			setStrAttr 2, 2, 3
-			drawStrC "CLICK to start", 320, y
+			setImgFontAttr 2, 2, 3
+			drawImgStrC "CLICK to start", 320, y
 		}
 	}
 	color 255, 255, 255

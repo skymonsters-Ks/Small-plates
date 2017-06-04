@@ -1,9 +1,9 @@
 ;$a>ax_citest.ax
 
 #include "hsp3dish.as"
-#include "../common/font.hsp"
+#include "../common/imgfont.hsp"
 
-#define DAT_FONT "f_recp8x8.png"
+#define DAT_FONT "f_recp8x8"
 #define DAT_STAR "img_star.png"
 #define DAT_BGM "bgm_aqtia.ogg"
 #define DAT_SE_DELBLOCK "se_pyun.wav"
@@ -46,9 +46,9 @@
 	
 	qmat , mat_wire, $cccccc, $cccccc
 	
-	initFont
-	loadFont DAT_FONT
-	setStrAttr 2, 2
+	initImgFont
+	loadImgFont DAT_FONT, DAT_FONT + ".png"
+	setImgFontAttr 2, 2
 
 	celload DAT_STAR
 	img_star = stat
@@ -213,12 +213,12 @@
 	gmulcolor
 	gmode 3, , , 255
 	
-	drawStr strf("FPS: %4.1f", fps), 10, 10
-	drawStr strf("Block num: %d", blocknum), 10, 34
-	drawStr strf("Letter num: %d", chrnum), 10, 58
+	drawImgStr strf("FPS: %4.1f", fps), 10, 10
+	drawImgStr strf("Block num: %d", blocknum), 10, 34
+	drawImgStr strf("Letter num: %d", chrnum), 10, 58
 	
-	drawStr strf("stick: $%08X", stk), 10, 100
-	drawStr strf("getkey: %s", gkey), 10, 124
+	drawImgStr strf("stick: $%08X", stk), 10, 100
+	drawImgStr strf("getkey: %s", gkey), 10, 124
 	
 	repeat strbufline + 1
 		if (cnt == strbufline) && ((gkeytimer \ 40) < 20) {
@@ -226,7 +226,7 @@
 		} else {
 			ts = strbuf(cnt)
 		}
-		drawStr ts, 30, 170 + cnt * 24
+		drawImgStr ts, 30, 170 + cnt * 24
 	loop
 	
 	redraw 1
@@ -248,7 +248,7 @@
 	return 0
 
 #deffunc addChr str _c, local _sp
-	_sp = getStrWidth(strbuf(strbufline) + _c)
+	_sp = getImgStrWidth(strbuf(strbufline) + _c)
 	if (_sp > 420) {
 		nextLine
 		if (stat == 0) : return
@@ -274,7 +274,7 @@
 		ln = strlen(strbuf(strbufline))
 		if (ln == 0) : return
 	}
-	_sp = getStrWidth(strbuf(strbufline))
+	_sp = getImgStrWidth(strbuf(strbufline))
 	poke strbuf(strbufline), ln - 1
 	chrnum--
 	mmplay 4

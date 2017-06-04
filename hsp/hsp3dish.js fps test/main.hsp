@@ -5,9 +5,16 @@
 #packopt xsize 480
 #packopt ysize 480
 
-#include "hsp3dish.as"
-#include "../common/font.hsp"
+; #define WIN_RUN
 
+#include "hsp3dish.as"
+#include "../common/imgfont.hsp"
+
+#ifdef WIN_RUN
+#define global DATA_DIR "../../docs/data/"
+#else
+#define global DATA_DIR ""
+#endif
 
 #module dish_util
 
@@ -32,11 +39,12 @@
 
 	dim pt@dish_util, 16
 
-	celload "img_star.png", 1
+	celload DATA_DIR + "img_star.png", 1
 	celdiv 1, 32, 32, 16, 16
 
-	initFont
-	loadFont "f_recp8x8.png"
+	f = DATA_DIR + "f_recp8x8"
+	initImgFont
+	loadImgFont f, f + ".png"
 
 	gsel 0
 
@@ -172,26 +180,26 @@
 		grect 240, menuHoverAreaTop(t) + 10
 
 		gmode 5, , , 255
-		setStrAttr 2, 2
-		drawStr "mode: " + drawModeStr(drawMode), 20, menuHoverAreaTop(1) + 2
-		drawStr "num: " + starNum, 20, menuHoverAreaTop(2) + 2
-		drawStr strf("size: %.2f", starSize), 20, menuHoverAreaTop(3) + 2
-		drawStr "await: " + waitTime, 20, menuHoverAreaTop(4) + 2
-		drawStr "skip: " + skipDrawLimit, 20, menuHoverAreaTop(5) + 2
+		setImgFontAttr 2, 2
+		drawImgStr "mode: " + drawModeStr(drawMode), 20, menuHoverAreaTop(1) + 2
+		drawImgStr "num: " + starNum, 20, menuHoverAreaTop(2) + 2
+		drawImgStr strf("size: %.2f", starSize), 20, menuHoverAreaTop(3) + 2
+		drawImgStr "await: " + waitTime, 20, menuHoverAreaTop(4) + 2
+		drawImgStr "skip: " + skipDrawLimit, 20, menuHoverAreaTop(5) + 2
 		if (menuSelectId >= 2) {
-			setStrAttr 2, 2, -2
-			drawStrC "<-  ->", mousex, mousey - 8
+			setImgFontAttr 2, 2, -2
+			drawImgStrC "<-  ->", mousex, mousey - 8
 		}
 	}
 	if (dispMode >= 1) {
 		gmode 5, , , 255
-		setStrAttr 2, 2
-		drawStrR strf("%.1f / %.1f fps", fps_draw, fps_update), 460, 440
+		setImgFontAttr 2, 2
+		drawImgStrR strf("%.1f / %.1f fps", fps_draw, fps_update), 460, 440
 	}
 	if (dispMode >= 4) {
 		gmode 5, , , 255
-		setStrAttr 1, 1, 2
-		drawStr "space key to toggle info on/off", 20, 440
+		setImgFontAttr 1, 1, 2
+		drawImgStr "space key to toggle info on/off", 20, 440
 	}
 
 	if (dispMode >= 3) {

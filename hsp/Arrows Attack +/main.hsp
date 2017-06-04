@@ -6,179 +6,16 @@
 #packopt ysize 480
 #packopt name "aaa"
 
+; #define WIN_RUN
+
 #include "hsp3dish.as"
+#include "../common/segfont.hsp"
 
-
-#module
-
-#deffunc initFont
-
-	r2 = sqrt(2) * 1.06 * 2
-	r2h = r2 / 2
-	a0 = 0.0
-	a45 = M_PI / 4
-	a90 = M_PI / 2
-	a135 = M_PI * 3 / 4
-
-	#define PP_NUM 4
-
-	ddim pp, PP_NUM, 30
-	; x,y,len,ang
-
-	pp(0, 0) =  0.0,  1.0, 2.0, a0
-	pp(0, 1) =  0.0,  0.0, 2.0, a0
-	pp(0, 2) =  0.0, -1.0, 2.0, a0
-
-	pp(0, 3) = -1.0,  0.0, 2.0, a90
-	pp(0, 4) =  0.0,  0.0, 2.0, a90
-	pp(0, 5) =  1.0,  0.0, 2.0, a90
-
-	pp(0, 6) = -0.5,  1.0, 1.0, a0
-	pp(0, 7) =  0.5,  1.0, 1.0, a0
-	pp(0, 8) = -0.5,  0.0, 1.0, a0
-	pp(0, 9) =  0.5,  0.0, 1.0, a0
-	pp(0,10) = -0.5, -1.0, 1.0, a0
-	pp(0,11) =  0.5, -1.0, 1.0, a0
-
-	pp(0,12) = -1.0,  0.5, 1.0, a90
-	pp(0,13) = -1.0, -0.5, 1.0, a90
-	pp(0,14) =  0.0,  0.5, 1.0, a90
-	pp(0,15) =  0.0, -0.5, 1.0, a90
-	pp(0,16) =  1.0,  0.5, 1.0, a90
-	pp(0,17) =  1.0, -0.5, 1.0, a90
-
-	pp(0,18) =  0.0,  0.0,  r2, a45
-	pp(0,19) =  0.0,  0.0,  r2, a135
-
-	pp(0,20) = -0.5,  0.5, r2h, a45
-	pp(0,21) = -0.5,  0.5, r2h, a135
-	pp(0,22) =  0.5,  0.5, r2h, a45
-	pp(0,23) =  0.5,  0.5, r2h, a135
-	pp(0,24) = -0.5, -0.5, r2h, a45
-	pp(0,25) = -0.5, -0.5, r2h, a135
-	pp(0,26) =  0.5, -0.5, r2h, a45
-	pp(0,27) =  0.5, -0.5, r2h, a135
-
-	pp(0,28) = -0.2,  0.8, 0.6, a90
-	pp(0,29) =  0.2,  0.8, 0.6, a90
-
-	; chr pp pp ...
-	f = {"
-	A 13 21 22 17 1
-	B 3 6 22 1 17 2
-	C 3 0 2
-	D 3 6 22 17 2
-	E 3 0 1 2
-	F 3 0 1
-	G 3 0 2 17 9
-	H 3 1 5
-	I 0 4 2
-	J 5 2 13
-	K 3 8 23 26
-	L 3 2
-	M 3 20 23 5
-	N 3 18 5
-	O 21 24 27 22
-	P 3 0 16 1
-	Q 21 24 27 22 26
-	R 3 0 16 1 26
-	S 7 21 1 27 10
-	T 0 4
-	U 3 2 5
-	V 12 24 27 16
-	W 3 25 26 5
-	X 18 19
-	Y 20 23 15
-	Z 0 19 2
-	0 0 3 2 5
-	1 4
-	2 0 16 1 13 2
-	3 0 5 1 2
-	4 12 1 5
-	5 0 12 1 17 2
-	6 3 2 17 1
-	7 0 5
-	8 0 3 2 5 1
-	9 0 12 1 5
-	. 28 29
-	"}
-
-	notesel f
-	lnum = notemax
-	
-	sdim asciiMap, 256
-	dim prmNum, lnum + 1
-	dim startIdx, lnum + 1
-	
-	p = 0
-	repeat lnum
-		noteget ls, cnt
-		split ls, " ", res
-		n = stat - 1
-		i = cnt + 1
-		poke asciiMap, peek(res), i
-		prmNum(i) = n
-		startIdx(i) = p
-		p += n * PP_NUM
-	loop
-	
-	ddim fontData, p * PP_NUM
-	
-	p = 0
-	repeat lnum
-		noteget ls, cnt
-		split ls, " ", res
-		n = stat - 1
-		repeat n
-			i = cnt
-			repeat PP_NUM
-				fontData(p + i * PP_NUM + cnt) = pp(cnt, int(res(i + 1)))
-			loop
-		loop
-		p += n * PP_NUM
-	loop
-	
-	noteunsel
-	dim pp
-	dim f
-	
-	return
-
-#deffunc drawChar int _c, int _x, int _y, int _sz, int _w
-
-	idx = peek(asciiMap, _c)
-	if (idx == 0) {
-		return
-	}
-	s = startIdx(idx)
-	sz = _sz / 2
-	repeat prmNum(idx)
-		i = s + cnt * PP_NUM
-		grect fontData(i) * sz + _x, -fontData(i + 1) * sz + _y, fontData(i + 3), fontData(i + 2) * sz, _w
-	loop
-	return
-
-#deffunc drawStr str _m, int _x, int _y, int _sz, int _ls, int _w
-
-	m = _m
-	x = _x + (_sz + _w) / 2
-	y = _y + (_sz + _w) / 2
-	repeat strlen(m)
-		c = peek(m, cnt)
-		drawChar c, x, y, _sz, _w
-		x += _sz + _ls + _w
-	loop
-	return
-
-#deffunc drawStrC str _m, int _x, int _y, int _sz, int _ls, int _w
-
-	m = _m
-	n = strlen(m)
-	drawStr m, _x - ((_sz + _w) * n + _ls * (n - 1)) / 2, _y, _sz, _ls, _w
-	return
-
-#global
-
+#ifdef WIN_RUN
+#define global DATA_DIR "../../docs/data/"
+#else
+#define global DATA_DIR ""
+#endif
 
 #const global TIME_LIMIT 30000
 #const global TIME_READY 1000
@@ -209,7 +46,7 @@
 
 #deffunc loadSe str _s, int _id
 
-	f = "se_" + _s + ".wav"
+	f = DATA_DIR + "se_" + _s + ".wav"
 	exist f
 	if (strsize >= 0) {
 		mmload f, _id
@@ -247,10 +84,26 @@
 	vol = 2
 	setVolAll vol
 
-	initFont
+	loadSegFont DATA_DIR + "fs_aaa"
 	initArrow
 	getreq time, SYSREQ_TIMER
 	changeScene SC_TITLE
+	
+	ddim knt_def, 20
+	
+	; "ARROWS ATTACK"
+	ddim knt_title, 13
+	knt_title(8) = 0.16
+	knt_title(10) = 0.16
+	
+	; "SPACE KEY TO START"
+	ddim knt_start, 18
+	knt_start(11) = 0.2
+	knt_start(15) = 0.16
+	
+	; "READY"
+	ddim knt_ready, 5
+	knt_ready(4) = 0.18
 
 *mainLoop
 
@@ -380,30 +233,31 @@
 		repeat vol * 2
 			grect 320 + (cnt / 2) * ((cnt \ 2) * 2 - 1) * 30, 410, , 14, 4
 		loop
-		draw_strTopBottom "ARROWS ATTACK"
+		draw_strTopBottom "ARROWS ATTACK", knt_title
 		swbreak
 	case SC_READY
 		draw_time_remain_log 0
 		drawReadyMark sceneTime, readyTime
-		drawStrC "READY", 320, 230, 20, 4, 2
+		setSegFontAttr 20, 2, 4
+		drawSegStrC "READY", 320, 230, knt_ready
 		swbreak
 	case SC_CLEAR
 		draw_fps
 		draw_time_remain_log resultTime
-		draw_strTopBottom "CLEAR"
+		draw_strTopBottom "CLEAR", knt_def
 		swbreak
 	case SC_MISS
 		draw_fps
 		drawHitMarker 0
 		draw_time_remain_log resultTime
 		draw_arrow_remainMark
-		draw_strTopBottom "MISS"
+		draw_strTopBottom "MISS", knt_def
 		swbreak
 	case SC_TIMEUP
 		draw_fps
 		draw_time_remain_log resultTime
 		draw_arrow_remainMark
-		draw_strTopBottom "TIMES UP"
+		draw_strTopBottom "TIMES UP", knt_def
 		swbreak
 	swend
 
@@ -425,8 +279,9 @@
 
 #deffunc draw_time_remain_log int _t
 
-	drawStr strf("%5.2f", limitf(_t, 0, TIME_LIMIT) / 1000), 450, 70, 20, 3, 2
-	drawStr strf("%d", remain), 112, 390, 20, 3, 2
+	setSegFontAttr 20, 2, 3
+	drawSegStr strf("%5.2f", limitf(_t, 0, TIME_LIMIT) / 1000), 450, 70
+	drawSegStr strf("%d", remain), 112, 390
 	repeat limit(REMAIN_NUM - remain, 0, 30)
 		drawArrow peek(arrowLog, cnt), 118 + cnt * 14, 426, 6
 	loop
@@ -439,7 +294,8 @@
 		t = limit(double(delta) / 16.666 * 20, 0, 120)
 	} else {
 		t = frameCnt * 1000 / resultTime
-		drawStr strf("%4d", t), 522, 105, 10, 2, 1
+		setSegFontAttr 10, 1, 2
+		drawSegStr strf("%4d", t), 522, 105
 		t = 1200 / t
 	}
 	boxf 572 - t, 98, 572, 100
@@ -453,10 +309,12 @@
 	return
 
 
-#deffunc draw_strTopBottom str _s
+#deffunc draw_strTopBottom str _s, array _kn
 
-	drawStrC _s, 320, 8, 40, 5, 2
-	drawStrC "SPACE KEY TO START", 320, 444, 28, 5, 2
+	setSegFontAttr 40, 2, 5
+	drawSegStrC _s, 320, 8, _kn
+	setSegFontAttr 28
+	drawSegStrC "SPACE KEY TO START", 320, 444, knt_start
 	return
 
 

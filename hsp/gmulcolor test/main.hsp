@@ -1,7 +1,15 @@
 ;$a>ax_dstars.ax
 
+; #define WIN_RUN
+
 #include "hsp3dish.as"
-#include "../common/font.hsp"
+#include "../common/imgfont.hsp"
+
+#ifdef WIN_RUN
+#define global DATA_DIR "../../docs/data/"
+#else
+#define global DATA_DIR ""
+#endif
 
 #const PI_D2 M_PI / 2
 
@@ -86,24 +94,24 @@
 	}
 	gmode 5, , , 255
 	repeat nums
-		drawStr strf(string(cnt), value(cnt)), posx(cnt) + 10, posy(cnt) + 8
+		drawImgStr strf(string(cnt), value(cnt)), posx(cnt) + 10, posy(cnt) + 8
 	loop
 	if (selectId >= 0) {
 		x = mousex
 		y = mousey - 8
 		if (getMenuVal(selectId) == int(maxval(selectId))) {
-			drawStr "<", x - 34, y
-			drawStr "-", x - 30, y
-			drawStr "]", x + 14, y
+			drawImgStr "<", x - 34, y
+			drawImgStr "-", x - 30, y
+			drawImgStr "]", x + 14, y
 		} else : if (getMenuVal(selectId) == int(minval(selectId))) {
-			drawStr "[", x - 30, y
-			drawStr "-", x + 14, y
-			drawStr ">", x + 18, y
+			drawImgStr "[", x - 30, y
+			drawImgStr "-", x + 14, y
+			drawImgStr ">", x + 18, y
 		} else {
-			drawStr "<", x - 34, y
-			drawStr "-", x - 30, y
-			drawStr "-", x + 14, y
-			drawStr ">", x + 18, y
+			drawImgStr "<", x - 34, y
+			drawImgStr "-", x - 30, y
+			drawImgStr "-", x + 14, y
+			drawImgStr ">", x + 18, y
 		}
 	}
 	return
@@ -113,11 +121,12 @@
 
 *start
 	
-	initFont
-	loadFont "f_reqt8x8.png"
-	setStrAttr 2, 2, 3
+	f = DATA_DIR + "f_reqt8x8"
+	initImgFont
+	loadImgFont f, f + ".png"
+	setImgFontAttr 2, 2, 3
 
-	celload "img_star.png"
+	celload DATA_DIR + "img_star.png"
 	img_star = stat
 	celdiv stat, , , 16, 16
 	
@@ -203,7 +212,7 @@
 	if (onMenu) {
 		drawMenu
 	}
-	drawStrR "DANCING STARS", 430, 440
+	drawImgStrR "DANCING STARS", 430, 440
 	
 	redraw 1
 	
