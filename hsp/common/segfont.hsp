@@ -1,0 +1,195 @@
+
+#ifndef mod_segfont
+
+#include "../common/sentence.hsp"
+
+#module mod_segfont
+
+#define global loadSegFont(%1, %2="") loadSegFont_ %1, %2
+#define global setSegFontAttr(%1=size@mod_segfont, %2=sizeW@mod_segfont, %3=lspace@mod_segfont) setSegFontAttr_ %1, %2, %3
+#define global drawSegStr(%1, %2, %3, %4=defOffsetX@mod_segfont, %5=defOffsetY@mod_segfont) drawSegStr_ %1, %2, %3, %4, %5
+#define global drawSegStrR(%1, %2, %3, %4=defOffsetX@mod_segfont, %5=defOffsetY@mod_segfont) drawSegStrR_ %1, %2, %3, %4, %5
+#define global drawSegStrC(%1, %2, %3, %4=defOffsetX@mod_segfont, %5=defOffsetY@mod_segfont) drawSegStrC_ %1, %2, %3, %4, %5
+#define global ctype getSegStrWidth(%1, %2=defOffsetX@mod_segfont) getSegStrWidth_(%1, %2)
+
+#deffunc loadSegFont_ str _fn, str _ifn
+
+/*
+	分割サイズx, y
+		（分割サイズが 0 の場合grect描画、画像は無視される）
+	セグメントID, 座標x, y, 長さ, 幅, 角度, 分割画像No.
+		（座標は -1.0 ~ 1.0 が基準）
+		（角度は水平が 0 度で右回りに正）
+	（以下 $ があるまでセグメント登録）
+	$
+	'アスキー文字', 文字幅（1.0基準）, セグメントID, ...
+		（文字は ' で囲う）
+	（以下文字登録）
+*/
+	size = 16.0
+	sizeW = 1.0
+	lspace = 2.0
+	
+	ddim defOffsetX, 256
+	ddim defOffsetY, 256
+
+	loadSentences _fn
+	nextSentence ls
+	sdim ps, 64, 2
+	split ls, ",", ps
+	imgDivX = int(ps(0))
+	imgDivY = int(ps(1))
+	if ((imgDivX > 0) && (imgDivY > 0)) {
+		celload _ifn
+		winId = stat
+		celdiv winId, imgDivX, imgDivY, imgDivX / 2, imgDivY / 2
+		onImg = 1
+	} else {
+		onImg = 0
+	}
+	
+	pt = getSentencePtr()
+	segNum = 0
+	repeat
+		nextSentence ls
+		if (peek(ls) == '$') : break
+		segNum++
+	loop
+	setSentencePtr pt
+	
+	ddim segpx, segNum
+	ddim segpy, segNum
+	ddim seglen, segNum
+	ddim segwid, segNum
+	ddim segang, segNum
+	dim segptn, segNum
+	
+	sdim ps, 64, 7
+	repeat
+		nextSentence ls
+		if (peek(ls) == '$') : break
+		split ls, ",", ps
+		id = int(ps)
+		segpx(id) = double(ps(1))
+		segpy(id) = double(ps(2))
+		seglen(id) = double(ps(3))
+		segwid(id) = double(ps(4))
+		segang(id) = double(ps(5)) * M_PI / 180
+		segptn(id) = int(ps(6))
+	loop
+	
+	sdim asciiMap, 256
+	memset asciiMap, $ff, 256
+	dim charSegNum, 256
+	dim startIdx, 256
+	ddim charWidth, 256
+	
+	pt = getSentencePtr()
+	sdim ps
+	segDataNum = 0
+	repeat
+		nextSentence ls
+		if (stat) : break
+		split ls, "'", ps
+		poke asciiMap, peek(ps(1)), cnt
+		split ls, ",", ps
+		n = stat - 2
+		charWidth(cnt) = double(ps(1))
+		charSegNum(cnt) = n
+		startIdx(cnt) = segDataNum
+		segDataNum += n
+	loop
+	setSentencePtr pt
+	
+	ddim segPosX, segDataNum
+	ddim segPosY, segDataNum
+	ddim segLength, segDataNum
+	ddim segWidth, segDataNum
+	ddim segAngle, segDataNum
+	dim segPattern, segDataNum
+	
+	sdim ps
+	repeat
+		nextSentence ls
+		if (stat) : break
+		split ls, ",", ps
+		p = startIdx(cnt)
+		repeat charSegNum(cnt)
+			id = int(ps(cnt + 2))
+			segPosX(p + cnt) = segpx(id)
+			segPosY(p + cnt) = segpy(id)
+			segLength(p + cnt) = seglen(id)
+			segWidth(p + cnt) = segwid(id)
+			segAngle(p + cnt) = segang(id)
+			segPattern(p + cnt) = segptn(id)
+		loop
+	loop
+	
+	return
+
+#deffunc setSegFontAttr_ double _sz, double _sw, double _ls
+
+	size = _sz
+	sizeW = _sw
+	lspace = _ls
+	return
+
+#deffunc drawSegChar int _idx, double _x, double _y
+
+	if (_idx == $ff) {
+		return
+	}
+	s = startIdx(_idx)
+	sz = size / 2
+	if (onImg) {
+		sl = sz / imgDivX
+		sw = sizeW / imgDivY
+		repeat charSegNum(_idx)
+			i = s + cnt
+			pos segPosX(i) * sz + _x, -segPosY(i) * sz + _y
+			celput winId, segPattern(i), segLength(i) * sl, segWidth(i) * sw, segAngle(i)
+		loop
+	} else {
+		repeat charSegNum(_idx)
+			i = s + cnt
+			grect segPosX(i) * sz + _x, -segPosY(i) * sz + _y, segAngle(i), segLength(i) * sz, segWidth(i) * sizeW
+		loop
+	}
+	return
+
+#deffunc drawSegStr_ str _m, double _x, double _y, array _ofsx, array _ofsy
+
+	m = _m
+	x = _x
+	y = (size + sizeW) / 2 + _y
+	repeat strlen(m)
+		idx = peek(asciiMap, peek(m, cnt))
+		w2 = (charWidth(idx) * size + sizeW) / 2
+		x += w2 - size * _ofsx(cnt)
+		drawSegChar idx, x, y - size * _ofsy(cnt)
+		x += w2 + lspace
+	loop
+	return
+
+#deffunc drawSegStrR_ str _m, double _x, double _y, array _ofsx, array _ofsy
+
+	drawSegStr _m, _x - getSegStrWidth(_m, _ofsx), _y, _ofsx, _ofsy
+	return
+
+#deffunc drawSegStrC_ str _m, double _x, double _y, array _ofsx, array _ofsy
+
+	drawSegStr _m, _x - getSegStrWidth(_m, _ofsx) / 2, _y, _ofsx, _ofsy
+	return
+
+#defcfunc getSegStrWidth_ str _m, array _ofsx
+
+	m = _m
+	w = 0.0
+	repeat strlen(m)
+		w += (charWidth(peek(asciiMap, peek(m, cnt))) - _ofsx(cnt)) * size + sizeW + lspace
+	loop
+	return w - lspace
+
+#global
+
+#endif

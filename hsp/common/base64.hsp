@@ -1,0 +1,71 @@
+
+#ifndef mod_base64
+
+#module mod_base64
+
+#deffunc initBase64
+
+	sdim code64, 64
+	sdim code256, 256
+	idx = 0
+	repeat 26 : setBaseCode 'A' + cnt : loop
+	repeat 26 : setBaseCode 'a' + cnt : loop
+	repeat 10 : setBaseCode '0' + cnt : loop
+	setBaseCode '-'
+	setBaseCode '_'
+	return
+	
+#deffunc setBaseCode int _c
+
+	code64 += strf("%c", _c)
+	poke code256, _c, idx : idx++
+	return
+
+#defcfunc encodeBase64 var _buf, int _sz
+
+	n = (_sz + 2) / 3
+	tmpsize = n * 4
+	sdim out, tmpsize + 1
+	ip = 0
+	op = 0
+	repeat n
+		bc = peek(_buf, ip), peek(_buf, ip + 1), peek(_buf, ip + 2)
+		poke out, op    , peek(code64, bc >> 2)
+		poke out, op + 1, peek(code64, ((bc & 3) << 4) + (bc(1) >> 4))
+		poke out, op + 2, peek(code64, ((bc(1) & 15) << 2) + (bc(2) >> 6))
+		poke out, op + 3, peek(code64, bc(2) & 63)
+		ip += 3
+		op += 4
+	loop
+	if (_sz \ 3) {
+		poke out, tmpsize - (3 - _sz \ 3)
+	}
+	return out
+	
+#deffunc decodeBase64 var _out, str _buf
+
+	buf = _buf
+	len = strlen(buf)
+	if (len \ 4) {
+		t = 4 - len \ 4
+		memexpand buf, len + t
+		memset buf, '=', t, len
+	}
+	n = (len + 3) / 4
+	tmpsize = n * 3
+	sdim _out, tmpsize + 1
+	ip = 0
+	op = 0
+	repeat n
+		repeat 4 : bc(cnt) = peek(code256, peek(buf, ip + cnt)) : loop
+		poke _out, op    , (bc << 2) + (bc(1) >> 4)
+		poke _out, op + 1, ((bc(1) & 15) << 4) + (bc(2) >> 2)
+		poke _out, op + 2, ((bc(2) & 3) << 6) + bc(3)
+		ip += 4
+		op += 3
+	loop
+	return len * 6 / 8
+	
+#global
+
+#endif

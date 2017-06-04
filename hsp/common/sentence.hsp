@@ -1,0 +1,46 @@
+
+#ifndef mod_sentence
+
+#module mod_sentence
+
+#deffunc loadSentences str _fn
+	fn = _fn
+	exist fn
+	if (strsize > 0) {
+		len = strsize
+		sdim buf, len
+		bload fn, buf
+		pt = 0
+		fin = 0
+	} else {
+		fin = 1
+	}
+	return fin
+
+#deffunc nextSentence var _res
+	if (fin) : return 1
+	repeat
+		if (pt >= len) {
+			_res = ""
+			fin = 1
+			break
+		}
+		getstr _res, buf, pt
+		pt += strsize
+		_res = strtrim(_res, 0, ' ')
+		if ((_res == "") || (peek(_res) == ';')) : continue
+		break
+	loop
+	return fin
+
+#defcfunc getSentencePtr
+	return pt
+
+#deffunc setSentencePtr int _pt
+	pt = _pt
+	fin = 0
+	return
+
+#global
+
+#endif
