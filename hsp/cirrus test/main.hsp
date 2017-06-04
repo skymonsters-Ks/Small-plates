@@ -66,7 +66,7 @@
 	
 	sz = 8, 14, 22
 	
-	maxline = 24
+	maxline = 22
 	sdim strbuf, 128, maxline
 	strbufline = 0
 	dim pregkey, 256
@@ -217,8 +217,9 @@
 	drawImgStr strf("Block num: %d", blocknum), 10, 34
 	drawImgStr strf("Letter num: %d", chrnum), 10, 58
 	
-	drawImgStr strf("stick: $%08X", stk), 10, 100
-	drawImgStr strf("getkey: %s", gkey), 10, 124
+	drawImgStr strf("mouse x, y, w: %d, %d, %d", mousex, mousey, mousew), 10, 100
+	drawImgStr strf("stick: $%08X", stk), 10, 124
+	drawImgStr strf("getkey: %s", gkey), 10, 148
 	
 	repeat strbufline + 1
 		if (cnt == strbufline) && ((gkeytimer \ 40) < 20) {
@@ -226,7 +227,7 @@
 		} else {
 			ts = strbuf(cnt)
 		}
-		drawImgStr ts, 30, 170 + cnt * 24
+		drawImgStr ts, 30, 220 + cnt * 24
 	loop
 	
 	redraw 1

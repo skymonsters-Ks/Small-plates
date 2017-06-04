@@ -22,8 +22,8 @@
 		（角度は水平が 0 度で右回りに正）
 	（以下 $ があるまでセグメント登録）
 	$
-	'アスキー文字', 文字幅（1.0基準）, セグメントID, ...
-		（文字は ' で囲う）
+	アスキー文字 文字幅（1.0基準）, セグメントID, ...
+		（文字は行頭１列目、２列目は半角スペース）
 	（以下文字登録）
 */
 	size = 16.0
@@ -88,13 +88,13 @@
 	sdim ps
 	segDataNum = 0
 	repeat
-		nextSentence ls
+		nextSentence ls, 2
 		if (stat) : break
-		split ls, "'", ps
-		poke asciiMap, peek(ps(1)), cnt
+		poke asciiMap, peek(ls), cnt
+		getstr ls, ls, 2
 		split ls, ",", ps
-		n = stat - 2
-		charWidth(cnt) = double(ps(1))
+		n = stat - 1
+		charWidth(cnt) = double(ps)
 		charSegNum(cnt) = n
 		startIdx(cnt) = segDataNum
 		segDataNum += n
@@ -110,12 +110,13 @@
 	
 	sdim ps
 	repeat
-		nextSentence ls
+		nextSentence ls, 2
 		if (stat) : break
+		getstr ls, ls, 2
 		split ls, ",", ps
 		p = startIdx(cnt)
 		repeat charSegNum(cnt)
-			id = int(ps(cnt + 2))
+			id = int(ps(cnt + 1))
 			segPosX(p + cnt) = segpx(id)
 			segPosY(p + cnt) = segpy(id)
 			segLength(p + cnt) = seglen(id)

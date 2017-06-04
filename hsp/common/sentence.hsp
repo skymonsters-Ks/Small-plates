@@ -3,7 +3,10 @@
 
 #module mod_sentence
 
+#define global nextSentence(%1, %2=7) nextSentence_ %1, %2
+
 #deffunc loadSentences str _fn
+
 	fn = _fn
 	exist fn
 	if (strsize > 0) {
@@ -17,7 +20,8 @@
 	}
 	return fin
 
-#deffunc nextSentence var _res
+#deffunc nextSentence_ var _res, int _mode
+
 	if (fin) : return 1
 	repeat
 		if (pt >= len) {
@@ -27,16 +31,25 @@
 		}
 		getstr _res, buf, pt
 		pt += strsize
-		_res = strtrim(_res, 0, ' ')
-		if ((_res == "") || (peek(_res) == ';')) : continue
+		if (_mode & 1) {
+			_res = strtrim(_res, 0, ' ')
+		}
+		if (_mode & 2) {
+			if (_res == "") : continue
+		}
+		if (_mode & 4) {
+			if (peek(_res) == ';') : continue
+		}
 		break
 	loop
 	return fin
 
 #defcfunc getSentencePtr
+
 	return pt
 
 #deffunc setSentencePtr int _pt
+
 	pt = _pt
 	fin = 0
 	return

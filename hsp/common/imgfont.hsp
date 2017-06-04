@@ -32,10 +32,10 @@
 
 /*
 	分割サイズx, y
-	'アスキー文字', 文字幅, シフトx, y
-	（文字は ' で囲む）
-	（文字幅、シフトはピクセル単位）
-	（シフト省略可）
+	アスキー文字 文字幅, シフトx, y
+		（文字は行頭１列目、２列目は半角スペース）
+		（文字幅、シフトはピクセル単位）
+		（シフト省略可）
 	（以下分割ID順に）...
 */
 	loadSentences _fn
@@ -47,15 +47,15 @@
 	winId(_id) = stat
 	celdiv stat, imgDivX, imgDivY
 	repeat
-		nextSentence ls
+		nextSentence ls, 2
 		if (stat) : break
-		split ls, "'", ps
-		poke asciiMap(_id), peek(ps(1)), cnt
-		sdim ps, 64, 4
+		poke asciiMap(_id), peek(ls), cnt
+		getstr ls, ls, 2
+		sdim ps, 64, 3
 		split ls, ",", ps
-		shiftx(_id, cnt) = int(ps(1)) + int(ps(2))
-		posx(_id, cnt) = int(ps(2))
-		posy(_id, cnt) = int(ps(3))
+		shiftx(_id, cnt) = int(ps(0)) + int(ps(1))
+		posx(_id, cnt) = int(ps(1))
+		posy(_id, cnt) = int(ps(2))
 	loop
 	return
 
