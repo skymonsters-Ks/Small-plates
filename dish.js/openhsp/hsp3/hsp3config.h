@@ -12,7 +12,7 @@
 #define mvscode 5		// minor version code
 #define vercode 0x3505	// version code
 
-#define modname "cirrus 1.3"
+#define modname "cirrus 1.4a"
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします

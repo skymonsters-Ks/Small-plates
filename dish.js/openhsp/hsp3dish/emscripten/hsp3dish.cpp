@@ -118,6 +118,17 @@ void handleEvent() {
 				//result += 2 * (m->x + m->y + m->xrel + m->yrel);
 				break;
 			}
+#ifdef HSPEMSCRIPTEN
+		case SDL_MOUSEWHEEL:
+			{
+				if ( exinfo != NULL ) {
+					SDL_MouseWheelEvent *m = (SDL_MouseWheelEvent*)&event;
+					Bmscr *bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+					bm->savepos[BMSCR_SAVEPOS_MOSUEW] = m->y;
+				}
+				break;
+			}
+#endif
 		case SDL_MOUSEBUTTONDOWN:
 			{
 				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
