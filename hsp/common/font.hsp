@@ -1,84 +1,70 @@
 
-#module mfont
+#ifndef mod_imgfont
 
-#deffunc initFont_ int _in, int _fn
-#define global initFont(%1=1, %2=1) initFont_ %1, %2
+#include "../common/sentence.hsp"
+
+#module mod_imgfont
+
+#define global initImgFont(%1=1) initImgFont_ %1
+#define global setImgFontAttr(%1=1, %2=1, %3=-1) setImgFontAttr_ %1, %2, %3
+#define global drawImgStr(%1, %2, %3, %4=defOffsetX@mod_imgfont, %5=defOffsetY@mod_imgfont) drawImgStr_ %1, %2, %3, %4, %5
+#define global drawImgStrR(%1, %2, %3, %4=defOffsetX@mod_imgfont, %5=defOffsetY@mod_imgfont) drawImgStrR_ %1, %2, %3, %4, %5
+#define global drawImgStrC(%1, %2, %3, %4=defOffsetX@mod_imgfont, %5=defOffsetY@mod_imgfont) drawImgStrC_ %1, %2, %3, %4, %5
+#define global ctype getImgStrWidth(%1, %2=defOffsetX@mod_imgfont) getImgStrWidth_(%1, %2)
+
+#deffunc initImgFont_ int _in
 
 	imgNum = _in ; 最大画像ファイル数
-	fontNum = _fn ; 最大フォント数（1ファイルに含まれるフォント数）
-	dim winId, imgNum
-	dim divNoStart, imgNum, fontNum
-	dim divNoMap, imgNum, fontNum, 96
-	dim posx, imgNum, fontNum, 96
-	dim posy, imgNum, fontNum, 96
-	dim shiftx, imgNum, fontNum, 96
 	fimg = 0
-	fid = 0
-	lspace = 1
+	dim winId, imgNum
+	sdim asciiMap, 256, imgNum
+	dim posx, imgNum, 256
+	dim posy, imgNum, 256
+	dim shiftx, imgNum, 256
 	rateX = 1.0
 	rateY = 1.0
+	lspace = 1
+	dim defOffsetX, 256
+	dim defOffsetY, 256
 	return
 
-#deffunc loadFont str _fn, int _id
+#deffunc loadImgFont str _fn, str _ifn, int _id
 
-;分割サイズx, y
-;@フォントID, （以下のフォントの）スタート分割ID
-;アスキー文字 文字幅, シフトx, y（シフトは省略可）
-;（以下分割ID順に）...
-
-	fn = _fn
-	sdim buf
-	notesel buf
-	noteload strmid(fn, 0, strlen(fn) - strlen(getpath(fn, 2)))
-	noteget ls, 0
-	split ls, ",", ts
-	celload fn
+/*
+	分割サイズx, y
+	'アスキー文字', 文字幅, シフトx, y
+	（文字は ' で囲む）
+	（文字幅、シフトはピクセル単位）
+	（シフト省略可）
+	（以下分割ID順に）...
+*/
+	loadSentences _fn
+	nextSentence ls
+	split ls, ",", ps
+	imgDivX = int(ps(0))
+	imgDivY = int(ps(1))
+	celload _ifn
 	winId(_id) = stat
-	celdiv stat, int(ts(0)), int(ts(1))
-	fontId = 0
-	idp = 0
-	repeat notemax - 1, 1
-		noteget ls, cnt
-		c = peek(ls)
-		if (c == 0) : continue
-		if (c == '@') {
-			if(peek(ls, 1) != ' ') {
-				getstr ls, ls, 1
-				split ls, ",", ts
-				fontId = int(ts(0))
-				idp = int(ts(1))
-				divNoStart(_id, fontId) = idp
-				continue
-			}
-		}
-		ic = c - $20
-		divNoMap(_id, fontId, ic) = idp
-		idp++
-		getstr ls, ls, 2
-		split ls, ",", ts
-		dim t, 3
-		repeat stat
-			t(cnt) = int(ts(cnt))
-		loop
-		shiftx(_id, fontId, ic) = t + t(1)
-		posx(_id, fontId, ic) = t(1)
-		posy(_id, fontId, ic) = t(2)
+	celdiv stat, imgDivX, imgDivY
+	repeat
+		nextSentence ls
+		if (stat) : break
+		split ls, "'", ps
+		poke asciiMap(_id), peek(ps(1)), cnt
+		sdim ps, 64, 4
+		split ls, ",", ps
+		shiftx(_id, cnt) = int(ps(1)) + int(ps(2))
+		posx(_id, cnt) = int(ps(2))
+		posy(_id, cnt) = int(ps(3))
 	loop
-	noteunsel
 	return
 
-#deffunc selFontImg int _id
+#deffunc selImgFont int _id
 
 	fimg = _id
 	return
 
-#deffunc selFontId int _id
-
-	fid = _id
-	return
-
-#deffunc setStrAttr_ double _rx, double _ry, int _ls
-#define global setStrAttr(%1=1, %2=1, %3=-1) setStrAttr_ %1, %2, %3
+#deffunc setImgFontAttr_ double _rx, double _ry, int _ls
 
 	rateX = _rx
 	rateY = _ry
@@ -89,56 +75,39 @@
 	}
 	return
 
-#deffunc drawStr str _m, int _x, int _y
-;左上基点
+#deffunc drawImgStr_ str _m, int _x, int _y, array _ofsx, array _ofsy
 
 	m = _m
 	x = _x
 	repeat strlen(m)
-		c = peek(m, cnt) - $20
-		x -= rateX * posx(fimg, fid, c)
-		pos x, _y + rateY * posy(fimg, fid, c)
-		celput winId(fimg), divNoMap(fimg, fid, c), rateX, rateY
-		x += rateX * shiftx(fimg, fid, c) + lspace
+		idx = peek(asciiMap, peek(m, cnt))
+		x -= rateX * (-_ofsx(cnt) + posx(fimg, idx))
+		pos x, _y + rateY * (-_ofsy(cnt) + posy(fimg, idx))
+		celput winId(fimg), idx, rateX, rateY
+		x += rateX * shiftx(fimg, idx) + lspace
 	loop
 	return
 
-#deffunc drawStrR str _m, int _x, int _y
-;右上基点
+#deffunc drawImgStrR_ str _m, int _x, int _y, array _ofsx, array _ofsy
 
-	m = _m
-	x = _x
-	len = strlen(m)
-	repeat len
-		c = peek(m, len - 1 - cnt) - $20
-		x -= rateX * shiftx(fimg, fid, c)
-		pos x, _y + rateY * posy(fimg, fid, c)
-		celput winId(fimg), divNoMap(fimg, fid, c), rateX, rateY
-		x += rateX * posx(fimg, fid, c) - lspace
-	loop
+	drawImgStr m, _x - getImgStrWidth(_m, _ofsx), _y, _ofsx, _ofsy
 	return
 
-#deffunc drawStrC str _m, int _x, int _y
-;中央上基点
+#deffunc drawImgStrC_ str _m, int _x, int _y, array _ofsx, array _ofsy
+
+	drawImgStr m, _x - getImgStrWidth(_m, _ofsx) / 2, _y, _ofsx, _ofsy
+	return
+
+#defcfunc getImgStrWidth_ str _m, array _ofsx
 
 	m = _m
-	x = 0
+	w = 0
 	repeat strlen(m)
-		c = peek(m, cnt) - $20
-		x -= rateX * posx(fimg, fid, c)
-		x += rateX * shiftx(fimg, fid, c) + lspace
+		idx = peek(asciiMap, peek(m, cnt))
+		w += rateX * (-_ofsx(cnt) + shiftx(fimg, idx) - posx(fimg, idx)) + lspace
 	loop
-	drawStr m, _x - x / 2, _y
-	return
-
-#defcfunc getStrWidth str _m
-
-	m = _m
-	x = 0
-	repeat strlen(m)
-		c = peek(m, cnt) - $20
-		x += rateX * (shiftx(fimg, fid, c) - posx(fimg, fid, c)) + lspace
-	loop
-	return x
+	return w - lspace
 
 #global
+
+#endif
