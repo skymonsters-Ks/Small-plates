@@ -90,12 +90,12 @@
 
 #deffunc drawImgStrR_ str _m, int _x, int _y, array _ofsx, array _ofsy
 
-	drawImgStr m, _x - getImgStrWidth(_m, _ofsx), _y, _ofsx, _ofsy
+	drawImgStr _m, _x - getImgStrWidth(_m, _ofsx), _y, _ofsx, _ofsy
 	return
 
 #deffunc drawImgStrC_ str _m, int _x, int _y, array _ofsx, array _ofsy
 
-	drawImgStr m, _x - getImgStrWidth(_m, _ofsx) / 2, _y, _ofsx, _ofsy
+	drawImgStr _m, _x - getImgStrWidth(_m, _ofsx) / 2, _y, _ofsx, _ofsy
 	return
 
 #defcfunc getImgStrWidth_ str _m, array _ofsx
