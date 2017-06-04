@@ -35,6 +35,7 @@
 #include "SDL/SDL_opengl.h"
 
 #include <emscripten.h>
+#include <emscripten/html5.h>
 
 //#define USE_OBAQ
 
@@ -118,7 +119,6 @@ void handleEvent() {
 				//result += 2 * (m->x + m->y + m->xrel + m->yrel);
 				break;
 			}
-#ifdef HSPEMSCRIPTEN
 		case SDL_MOUSEWHEEL:
 			{
 				if ( exinfo != NULL ) {
@@ -128,7 +128,6 @@ void handleEvent() {
 				}
 				break;
 			}
-#endif
 		case SDL_MOUSEBUTTONDOWN:
 			{
 				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
@@ -162,6 +161,23 @@ void handleEvent() {
 bool get_key_state(int sym)
 {
 	return keys[sym];
+}
+
+EM_BOOL deviceorientation_callback( int eventType, const EmscriptenDeviceOrientationEvent *e, void *userData )
+{
+	hgio_setinfo( GINFO_EXINFO_GYRO_Z, e->alpha );
+	hgio_setinfo( GINFO_EXINFO_GYRO_X, e->beta );
+	hgio_setinfo( GINFO_EXINFO_GYRO_Y, e->gamma );
+	return 0;
+}
+
+void initHtmlEvent()
+{
+	EMSCRIPTEN_RESULT ret;
+	ret = emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback );
+	if ( ret < 0 ) {
+		Alertf( "failure: device orientation (%d)", ret );
+	}
 }
 
 static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtitle )
@@ -613,6 +629,8 @@ int hsp3dish_init( char *startfile )
 	HSP3DEVINFO *devinfo;
 	devinfo = hsp3extcmd_getdevinfo();
 	hsp3dish_setdevinfo( devinfo );
+
+	initHtmlEvent();
 
 	return 0;
 }
