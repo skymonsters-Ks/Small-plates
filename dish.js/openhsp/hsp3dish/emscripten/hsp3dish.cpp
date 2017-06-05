@@ -171,13 +171,21 @@ EM_BOOL deviceorientation_callback( int eventType, const EmscriptenDeviceOrienta
 	return 0;
 }
 
+EM_BOOL devicemotion_callback( int eventType, const EmscriptenDeviceMotionEvent *e, void *userData )
+{
+	hgio_setinfo( GINFO_EXINFO_ACCEL_X, e->accelerationX );
+	hgio_setinfo( GINFO_EXINFO_ACCEL_Y, e->accelerationY );
+	hgio_setinfo( GINFO_EXINFO_ACCEL_Z, e->accelerationZ );
+	return 0;
+}
+
 void initHtmlEvent()
 {
 	EMSCRIPTEN_RESULT ret;
 	ret = emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback );
-	if ( ret < 0 ) {
-		Alertf( "failure: device orientation (%d)", ret );
-	}
+	if ( ret < 0 ) Alertf( "failure: device orientation (%d)", ret );
+	ret = emscripten_set_devicemotion_callback( 0, true, devicemotion_callback );
+	if ( ret < 0 ) Alertf( "failure: device motion (%d)", ret );
 }
 
 static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtitle )
