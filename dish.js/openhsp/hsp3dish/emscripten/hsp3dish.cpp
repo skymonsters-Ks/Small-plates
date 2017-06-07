@@ -196,13 +196,13 @@ void initHtmlEvent()
 	if ( ret < 0 ) Alertf( "failure: device orientation (%d)", ret );
 	ret = emscripten_set_devicemotion_callback( 0, true, devicemotion_callback );
 	if ( ret < 0 ) Alertf( "failure: device motion (%d)", ret );
-	ret = emscripten_set_touchstart_callback( 0, 0, true, touch_callback );
+	ret = emscripten_set_touchstart_callback( "#canvas", 0, true, touch_callback );
 	if ( ret < 0 ) {
 		Alertf( "failure: touch start (%d)", ret );
 	} else {
-		emscripten_set_touchend_callback( 0, 0, true, touch_callback );
-		emscripten_set_touchmove_callback( 0, 0, true, touch_callback );
-		emscripten_set_touchcancel_callback( 0, 0, true, touch_callback );
+		emscripten_set_touchend_callback( "#canvas", 0, true, touch_callback );
+		emscripten_set_touchmove_callback( "#canvas", 0, true, touch_callback );
+		emscripten_set_touchcancel_callback( "#canvas", 0, true, touch_callback );
 	}
 }
 
