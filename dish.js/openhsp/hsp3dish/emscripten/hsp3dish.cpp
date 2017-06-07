@@ -179,6 +179,16 @@ EM_BOOL devicemotion_callback( int eventType, const EmscriptenDeviceMotionEvent 
 	return 0;
 }
 
+EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *userData )
+{
+	for( int i = 0; i < e->numTouches; i++ ) {
+		const EmscriptenTouchPoint *t = &e->touches[i];
+		bool touch = eventType & ( EMSCRIPTEN_EVENT_TOUCHSTART | EMSCRIPTEN_EVENT_TOUCHMOVE );
+		hgio_mtouchid( t->identifier, t->canvasX, t->canvasY, touch, 1 );
+	}
+	return 0;
+}
+
 void initHtmlEvent()
 {
 	EMSCRIPTEN_RESULT ret;
@@ -186,6 +196,14 @@ void initHtmlEvent()
 	if ( ret < 0 ) Alertf( "failure: device orientation (%d)", ret );
 	ret = emscripten_set_devicemotion_callback( 0, true, devicemotion_callback );
 	if ( ret < 0 ) Alertf( "failure: device motion (%d)", ret );
+	ret = emscripten_set_touchstart_callback( 0, 0, true, touch_callback );
+	if ( ret < 0 ) {
+		Alertf( "failure: touch start (%d)", ret );
+	} else {
+		emscripten_set_touchend_callback( 0, 0, true, touch_callback );
+		emscripten_set_touchmove_callback( 0, 0, true, touch_callback );
+		emscripten_set_touchcancel_callback( 0, 0, true, touch_callback );
+	}
 }
 
 static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtitle )
