@@ -183,7 +183,7 @@ EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *user
 {
 	for( int i = 0; i < e->numTouches; i++ ) {
 		const EmscriptenTouchPoint *t = &e->touches[i];
-		bool touch = eventType & ( EMSCRIPTEN_EVENT_TOUCHSTART | EMSCRIPTEN_EVENT_TOUCHMOVE );
+		bool touch = ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) || ( eventType == EMSCRIPTEN_EVENT_TOUCHMOVE );
 		hgio_mtouchid( t->identifier, t->canvasX, t->canvasY, touch, 1 );
 	}
 	return 0;
