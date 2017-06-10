@@ -1,0 +1,92 @@
+;$a>ax_gamtest.ax
+
+#include "hsp3dish.as"
+#include "../common/imgfont.hsp"
+
+	f = "f_recp8x8"
+	initImgFont
+	loadImgFont f, f + ".png"
+	setImgFontAttr 2, 2, 3
+	
+	setcls 1, $5588cc
+	
+	gmode 3,,,255
+	
+	cmax = 16
+	dim ce, cmax
+	dim cx, cmax
+	dim cy, cmax
+	dim cs, cmax
+	
+	ptnum = 0
+	
+*mainLoop
+
+	mtlist mtl
+	tnum = stat
+	
+	if (tnum > ptnum) {
+		repeat tnum - ptnum
+			i = cnt
+			repeat cmax
+				if (ce(cnt) == 0) {
+					ce(cnt) = 1
+					mtinfo v, mtl(ptnum + i)
+					cx(cnt) = v(1)
+					cy(cnt) = v(2)
+					cs(cnt) = 70
+					break
+				}
+			loop
+		loop
+	}
+	ptnum = tnum
+	
+	repeat cmax
+		if (ce(cnt)) {
+			cs(cnt) += 15
+			if (cs(cnt) > 600) {
+				ce(cnt) = 0
+			}
+		}
+	loop
+	
+	redraw 0
+
+	repeat tnum
+		mtinfo v, mtl(cnt)
+		x = v(1)
+		y = v(2)
+		s = 80
+		color 250, 190, 230
+		circle x - s, y - s, x + s, y + s
+	loop
+	
+	repeat cmax
+		if (ce(cnt)) {
+			x = cx(cnt)
+			y = cy(cnt)
+			s = cs(cnt)
+			color 250, 190, 230
+			circle x - s, y - s, x + s, y + s, 0
+		}
+	loop
+	
+	drawImgStr strf("GyroX: %7.3f", ginfo(259)), 10, 10
+	drawImgStr strf("GyroY: %7.3f", ginfo(260)), 10, 30
+	drawImgStr strf("GyroZ: %7.3f", ginfo(261)), 10, 50
+	drawImgStr strf("AccelX: %7.3f", ginfo(256)), 10, 80
+	drawImgStr strf("AccelY: %7.3f", ginfo(257)), 10, 100
+	drawImgStr strf("AccelZ: %7.3f", ginfo(258)), 10, 120
+	
+	repeat tnum
+		mtinfo v, mtl(cnt)
+		drawImgStr strf("ID:%d (%d, %d)", v(3), v(1), v(2)), 10, 150 + 20 * cnt
+	loop
+	
+	redraw 1
+	
+	await 1
+	
+	goto *mainLoop
+	
