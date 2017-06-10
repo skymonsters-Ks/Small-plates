@@ -72,16 +72,18 @@
 		}
 	loop
 	
-	drawImgStr strf("GyroX: %7.3f", ginfo(259)), 10, 10
-	drawImgStr strf("GyroY: %7.3f", ginfo(260)), 10, 30
-	drawImgStr strf("GyroZ: %7.3f", ginfo(261)), 10, 50
-	drawImgStr strf("AccelX: %7.3f", ginfo(256)), 10, 80
-	drawImgStr strf("AccelY: %7.3f", ginfo(257)), 10, 100
-	drawImgStr strf("AccelZ: %7.3f", ginfo(258)), 10, 120
+	drawImgStr strf("GyroX: %.3f", ginfo(259)), 10, 10
+	drawImgStr strf("GyroY: %.3f", ginfo(260)), 10, 30
+	drawImgStr strf("GyroZ: %.3f", ginfo(261)), 10, 50
+	drawImgStr strf("AccelX: %.3f", ginfo(256)), 10, 80
+	drawImgStr strf("AccelY: %.3f", ginfo(257)), 10, 100
+	drawImgStr strf("AccelZ: %.3f", ginfo(258)), 10, 120
+	drawImgStr strf("MouseX: %d", mousex), 10, 150
+	drawImgStr strf("MouseY: %d", mousey), 10, 170
 	
 	repeat tnum
 		mtinfo v, mtl(cnt)
-		drawImgStr strf("ID:%d (%d, %d)", v(3), v(1), v(2)), 10, 150 + 20 * cnt
+		drawImgStr strf("Touch%d: (%d, %d)", cnt, v(1), v(2)), 10, 200 + 20 * cnt
 	loop
 	
 	redraw 1
