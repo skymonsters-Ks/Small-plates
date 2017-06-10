@@ -682,6 +682,16 @@ void hgio_scale_point( int xx, int yy, int &x, int & y )
 {
 	x = ( xx - _originX ) * _rateX;
 	y = ( yy - _originY ) * _rateY;
+	if ( x < _originX ) {
+		x = _originX;
+	} else if ( x >= _bgsx ) {
+		x = _bgsx - 1;
+	}
+	if ( y < _originY ) {
+		y = _originY;
+	} else if ( y >= _bgsy ) {
+		y = _bgsy - 1;
+	}
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -726,88 +736,49 @@ int hgio_title( char *str1 )
 }
 
 
+#define MOUSE_LBMASK 1
+#define MOUSE_RBMASK 2
+#define MOUSE_MBMASK 4
+
 int hgio_stick( int actsw )
 {
 	int ckey = 0;
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	if ( get_key_state(SDLK_LEFT) )     ckey|=1<<0;
-	if ( get_key_state(SDLK_UP) )       ckey|=1<<1;
-	if ( get_key_state(SDLK_RIGHT) )    ckey|=1<<2;
-	if ( get_key_state(SDLK_DOWN) )     ckey|=1<<3;
-	if ( get_key_state(SDLK_SPACE) )    ckey|=1<<4;
-	if ( get_key_state(SDLK_RETURN) )   ckey|=1<<5;
-	if ( get_key_state(SDLK_LCTRL) ||
-	     get_key_state(SDLK_RCTRL) )    ckey|=1<<6;
-	if ( get_key_state(SDLK_ESCAPE) )   ckey|=1<<7;
-	if ( mouse_btn & SDL_BUTTON_LMASK ) ckey|=1<<8;
-	if ( mouse_btn & SDL_BUTTON_RMASK ) ckey|=1<<9;
-	if ( get_key_state(SDLK_TAB) )      ckey|=1<<10;
-	
-	if ( get_key_state(SDLK_z) )        ckey|=1<<11;
-	if ( get_key_state(SDLK_x) )        ckey|=1<<12;
-	if ( get_key_state(SDLK_c) )        ckey|=1<<13;
+	if ( get_key_state(37) )        ckey|=1<<0;  // Left
+	if ( get_key_state(38) )        ckey|=1<<1;  // Up
+	if ( get_key_state(39) )        ckey|=1<<2;  // Right
+	if ( get_key_state(40) )        ckey|=1<<3;  // Down
+	if ( get_key_state(32) )        ckey|=1<<4;  // Space
+	if ( get_key_state(13) )        ckey|=1<<5;  // Enter
+	if ( get_key_state(17) )        ckey|=1<<6;  // Ctrl
+	if ( get_key_state(27) )        ckey|=1<<7;  // Esc
+	if ( mouse_btn & MOUSE_LBMASK ) ckey|=1<<8;
+	if ( mouse_btn & MOUSE_RBMASK ) ckey|=1<<9;
+	if ( get_key_state(9) )         ckey|=1<<10;  // Tab
 
-	if ( get_key_state(SDLK_a) )        ckey|=1<<14;
-	if ( get_key_state(SDLK_w) )        ckey|=1<<15;
-	if ( get_key_state(SDLK_d) )        ckey|=1<<16;
-	if ( get_key_state(SDLK_s) )        ckey|=1<<17;
+	if ( get_key_state(90) )        ckey|=1<<11;  // Z
+	if ( get_key_state(88) )        ckey|=1<<12;  // X
+	if ( get_key_state(67) )        ckey|=1<<13;  // C
+ 
+	if ( get_key_state(65) )        ckey|=1<<14;  // A
+	if ( get_key_state(83) )        ckey|=1<<15;  // S
+	if ( get_key_state(68) )        ckey|=1<<16;  // D
+	if ( get_key_state(87) )        ckey|=1<<17;  // W
 #else
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
 	return ckey;
 }
 
-
 #if defined(HSPEMSCRIPTEN)
-static const unsigned int key_map[256]={
-	/* 0- */
-	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
-	0, 0, 0, SDLK_PAUSE, SDLK_CAPSLOCK, 0, 0, 0, 0, 0, 0, SDLK_ESCAPE, 0, 0, 0, 0,
-	/* 32- */
-	SDLK_SPACE, SDLK_PAGEUP, SDLK_PAGEDOWN, SDLK_END, SDLK_HOME,
-	SDLK_LEFT, SDLK_UP, SDLK_RIGHT, SDLK_DOWN, 0, SDLK_PRINT, 0, 0, SDLK_INSERT, SDLK_DELETE, SDLK_HELP,
-	/* 48- */
-	SDLK_0, SDLK_1, SDLK_2, SDLK_3, SDLK_4, SDLK_5, SDLK_6, SDLK_7, SDLK_8, SDLK_9,
-	0, 0, 0, 0, 0, 0, 0,
-	/* 65- */
-	SDLK_a, SDLK_b, SDLK_c, SDLK_d, SDLK_e, SDLK_f, SDLK_g, SDLK_h, SDLK_i,
-	SDLK_j, SDLK_k, SDLK_l, SDLK_m, SDLK_n, SDLK_o, SDLK_p, SDLK_q, SDLK_r,
-	SDLK_s, SDLK_t, SDLK_u, SDLK_v, SDLK_w, SDLK_x, SDLK_y, SDLK_z,
-	/* 91- */
-	SDLK_LSUPER, SDLK_RSUPER, 0, 0, 0,
-	SDLK_KP0, SDLK_KP1, SDLK_KP2, SDLK_KP3, SDLK_KP4, SDLK_KP5, SDLK_KP6, SDLK_KP7, SDLK_KP8, SDLK_KP9,
-	SDLK_KP_MULTIPLY, SDLK_KP_PLUS, 0, SDLK_KP_MINUS, SDLK_KP_PERIOD, SDLK_KP_DIVIDE, 
-	/* 112- */
-	SDLK_F1, SDLK_F2, SDLK_F3, SDLK_F4, SDLK_F5, SDLK_F6, SDLK_F7, SDLK_F8, SDLK_F9, SDLK_F10,
-	SDLK_F11, SDLK_F12, SDLK_F13, SDLK_F14, SDLK_F15, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	/* 136- */
-	0, 0, 0, 0, 0, 0, 0, 0, SDLK_NUMLOCK, 145,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	/* 160- */
-	SDLK_LSHIFT, SDLK_RSHIFT, SDLK_LCTRL, SDLK_RCTRL, SDLK_LALT, SDLK_RALT,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	/* 186- */
-	SDLK_COLON, SDLK_SEMICOLON, SDLK_COMMA, SDLK_MINUS, SDLK_PERIOD, SDLK_SLASH, SDLK_AT, 
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	/* 219- */
-	SDLK_LEFTBRACKET, SDLK_BACKSLASH, SDLK_RIGHTBRACKET, SDLK_CARET,
-	0, 0, 0, SDLK_DOLLAR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
-	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
-};
-
 bool hgio_getkey( int kcode )
 {
 	bool res = false;
 	switch( kcode ){
-		case 1: res = (mouse_btn & SDL_BUTTON_LMASK) > 0; break;
-		case 2: res = (mouse_btn & SDL_BUTTON_RMASK) > 0; break;
-		case 4: res = (mouse_btn & SDL_BUTTON_MMASK) > 0; break;
-		case 5: res = (mouse_btn & SDL_BUTTON_X1MASK) > 0; break;
-		case 6: res = (mouse_btn & SDL_BUTTON_X2MASK) > 0; break;
-		case 16: res = get_key_state(SDLK_LSHIFT) | get_key_state(SDLK_RSHIFT); break;
-		case 17: res = get_key_state(SDLK_LCTRL) | get_key_state(SDLK_RCTRL); break;
-		case 18: res = get_key_state(SDLK_LALT) | get_key_state(SDLK_RALT); break;
-		default: res = get_key_state( key_map[ kcode & 255 ] ); break;
+		case 1: res = (mouse_btn & MOUSE_LBMASK) > 0; break;
+		case 2: res = (mouse_btn & MOUSE_RBMASK) > 0; break;
+		case 4: res = (mouse_btn & MOUSE_MBMASK) > 0; break;
+		default: res = get_key_state( kcode & SDLK_LAST - 1 ); break;
 	}
 	return res;
 }
@@ -1748,8 +1719,7 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 void hgio_touch( int xx, int yy, int button )
 {
     Bmscr *bm;
-	mouse_x = ( xx - _originX ) * _rateX;
-	mouse_y = ( yy - _originY ) * _rateY;
+	hgio_scale_point( xx, yy, mouse_x, mouse_y );
 	mouse_btn = button;
     if ( mainbm != NULL ) {
         mainbm->savepos[BMSCR_SAVEPOS_MOSUEX] = mouse_x;
@@ -1767,8 +1737,7 @@ void hgio_mtouch( int old_x, int old_y, int xx, int yy, int button, int opt )
     int x,y,old_x2,old_y2;
     if ( mainbm == NULL ) return;
     bm = (Bmscr *)mainbm;
-	x = ( xx - _originX ) * _rateX;
-	y = ( yy - _originY ) * _rateY;
+	hgio_scale_point( xx, yy, x, y );
     if ( opt == 0) {
         mouse_x = x;
         mouse_y = y;
@@ -1797,8 +1766,7 @@ void hgio_mtouchid( int pointid, int xx, int yy, int button, int opt )
     int x,y;
     if ( mainbm == NULL ) return;
     bm = (Bmscr *)mainbm;
-	x = ( xx - _originX ) * _rateX;
-	y = ( yy - _originY ) * _rateY;
+	hgio_scale_point( xx, yy, x, y );
     if ( opt == 0 ) {
         mouse_x = x;
         mouse_y = y;

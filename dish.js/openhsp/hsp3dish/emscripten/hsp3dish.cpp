@@ -90,77 +90,56 @@ extern "C" {
 #endif
 
 /*----------------------------------------------------------*/
-void handleEvent() {
-	SDL_Event event;
-	while (SDL_PollEvent(&event)) {
-		switch(event.type) {
-		case SDL_MOUSEMOTION:
-			{
-				Bmscr *bm;
-				if ( exinfo != NULL ) {
-					SDL_MouseMotionEvent *m = (SDL_MouseMotionEvent*)&event;
-					int x, y;
-#ifdef HSPDISHGP
-					x = m->x;
-					y = m->y;
-#else
-					hgio_scale_point( m->x, m->y, x, y );
-#endif
-
-					bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-					bm->savepos[BMSCR_SAVEPOS_MOSUEX] = x;
-					bm->savepos[BMSCR_SAVEPOS_MOSUEY] = y;
-					bm->UpdateAllObjects();
-					bm->setMTouchByPointId( -1, x, y, true );
-
-					//printf("motion: %d,%d  %d,%d\n", m->x, m->y, m->xrel, m->yrel);
-				}
-				//assert(x == m->x && y == m->y);
-				//result += 2 * (m->x + m->y + m->xrel + m->yrel);
-				break;
-			}
-		case SDL_MOUSEWHEEL:
-			{
-				if ( exinfo != NULL ) {
-					SDL_MouseWheelEvent *m = (SDL_MouseWheelEvent*)&event;
-					Bmscr *bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-					bm->savepos[BMSCR_SAVEPOS_MOSUEW] = m->y;
-				}
-				break;
-			}
-		case SDL_MOUSEBUTTONDOWN:
-			{
-				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
-				// printf("button down: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
-				hgio_touch( m->x, m->y, SDL_GetMouseState(NULL, NULL) );
-				break;
-			}
-		case SDL_MOUSEBUTTONUP:
-			{
-				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
-				// printf("button up: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
-				hgio_touch( m->x, m->y, SDL_GetMouseState(NULL, NULL) );
-				break;
-			}
-		case SDL_KEYDOWN:
-			if (!keys[event.key.keysym.sym]) {
-				keys[event.key.keysym.sym] = true;
-				//printf("key down: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
-			}
-			break;
-		case SDL_KEYUP:
-			if (keys[event.key.keysym.sym]) {
-				keys[event.key.keysym.sym] = false;
-				//printf("key up: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
-			}
-			break;
-		}
-	}
-}
 
 bool get_key_state(int sym)
 {
 	return keys[sym];
+}
+
+double getCanvasRate( void )
+{
+	double cx = 0.0, cy = 0.0;
+	int sx = hgio_getWidth();
+	emscripten_get_element_css_size( 0, &cx, &cy );
+	if (( cx < 1.0 ) || ( sx < 1 )) {
+		return 1.0;
+	} else {
+		return cx / sx;
+	}
+}
+
+EM_BOOL key_callback( int eventType, const EmscriptenKeyboardEvent *e, void *userData )
+{
+	// 'keyCode' attribute is deprecated.
+	keys[e->keyCode] = (eventType == EMSCRIPTEN_EVENT_KEYDOWN);
+	return 0;
+}
+
+EM_BOOL mouse_callback( int eventType, const EmscriptenMouseEvent *e, void *userData )
+{
+	double cr = getCanvasRate();
+	hgio_touch( e->canvasX / cr, e->canvasY / cr, e->buttons );
+	return 0;
+}
+
+EM_BOOL wheel_callback( int eventType, const EmscriptenWheelEvent *e, void *userData )
+{
+	if ( exinfo != NULL ) {
+		Bmscr *bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+		bm->savepos[BMSCR_SAVEPOS_MOSUEW] = (int)(e->deltaY * 100);
+	}
+	return 0;
+}
+
+EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *userData )
+{
+	double cr = getCanvasRate();
+	for( int i = 0; i < e->numTouches; i++ ) {
+		const EmscriptenTouchPoint *t = &e->touches[i];
+		bool touch = ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) || ( eventType == EMSCRIPTEN_EVENT_TOUCHMOVE );
+		hgio_mtouchid( t->identifier, t->canvasX / cr, t->canvasY / cr, touch, i );
+	}
+	return 0;
 }
 
 EM_BOOL deviceorientation_callback( int eventType, const EmscriptenDeviceOrientationEvent *e, void *userData )
@@ -179,31 +158,28 @@ EM_BOOL devicemotion_callback( int eventType, const EmscriptenDeviceMotionEvent 
 	return 0;
 }
 
-EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *userData )
-{
-	for( int i = 0; i < e->numTouches; i++ ) {
-		const EmscriptenTouchPoint *t = &e->touches[i];
-		bool touch = ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) || ( eventType == EMSCRIPTEN_EVENT_TOUCHMOVE );
-		hgio_mtouchid( t->identifier, t->canvasX, t->canvasY, touch, 1 );
-	}
-	return 0;
-}
+#define SET_EVENT(f, r) ret = (f); if ( ret < 0 ) Alertf( "event setting error: %s (%d)", #r, ret )
 
 void initHtmlEvent()
 {
 	EMSCRIPTEN_RESULT ret;
-	ret = emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback );
-	if ( ret < 0 ) Alertf( "failure: device orientation (%d)", ret );
-	ret = emscripten_set_devicemotion_callback( 0, true, devicemotion_callback );
-	if ( ret < 0 ) Alertf( "failure: device motion (%d)", ret );
-	ret = emscripten_set_touchstart_callback( 0, 0, true, touch_callback );
-	if ( ret < 0 ) {
-		Alertf( "failure: touch start (%d)", ret );
-	} else {
-		emscripten_set_touchend_callback( 0, 0, true, touch_callback );
-		emscripten_set_touchmove_callback( 0, 0, true, touch_callback );
-		emscripten_set_touchcancel_callback( 0, 0, true, touch_callback );
-	}
+	
+	SET_EVENT( emscripten_set_keydown_callback( 0, 0, true, key_callback ), key down );
+	SET_EVENT( emscripten_set_keyup_callback( 0, 0, true, key_callback ), key up );
+
+	SET_EVENT( emscripten_set_mousedown_callback( 0, 0, true, mouse_callback ), mouse down );
+	SET_EVENT( emscripten_set_mouseup_callback( 0, 0, true, mouse_callback ), mouse up );
+	SET_EVENT( emscripten_set_mousemove_callback( 0, 0, true, mouse_callback ), mouse move );
+
+	SET_EVENT( emscripten_set_wheel_callback( 0, 0, true, wheel_callback ), wheel );
+
+	SET_EVENT( emscripten_set_touchstart_callback( 0, 0, true, touch_callback ), touch start );
+	SET_EVENT( emscripten_set_touchend_callback( 0, 0, true, touch_callback ), touch end );
+	SET_EVENT( emscripten_set_touchmove_callback( 0, 0, true, touch_callback ), touch move );
+	SET_EVENT( emscripten_set_touchcancel_callback( 0, 0, true, touch_callback ), touch cancel );
+
+	SET_EVENT( emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback ), device orientation );
+	SET_EVENT( emscripten_set_devicemotion_callback( 0, true, devicemotion_callback ), device motion );
 }
 
 static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtitle )
@@ -751,7 +727,6 @@ void hsp3dish_exec_one( void )
 			return;
 		}
 	}
-	handleEvent();
 	//		ŽÀs‚ÌŠJŽn
 	//
 	static int code_execcmd_state = 0;
