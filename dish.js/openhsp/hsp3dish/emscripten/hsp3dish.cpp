@@ -163,19 +163,20 @@ EM_BOOL devicemotion_callback( int eventType, const EmscriptenDeviceMotionEvent 
 void initHtmlEvent()
 {
 	EMSCRIPTEN_RESULT ret;
+	const char *element = "#canvas";
 	
 	SET_EVENT( emscripten_set_keydown_callback( 0, 0, true, key_callback ), key down );
 	SET_EVENT( emscripten_set_keyup_callback( 0, 0, true, key_callback ), key up );
 
-	SET_EVENT( emscripten_set_mousedown_callback( 0, 0, true, mouse_callback ), mouse down );
+	SET_EVENT( emscripten_set_mousedown_callback( element, 0, true, mouse_callback ), mouse down );
 	SET_EVENT( emscripten_set_mouseup_callback( 0, 0, true, mouse_callback ), mouse up );
-	SET_EVENT( emscripten_set_mousemove_callback( 0, 0, true, mouse_callback ), mouse move );
+	SET_EVENT( emscripten_set_mousemove_callback( element, 0, true, mouse_callback ), mouse move );
 
-	SET_EVENT( emscripten_set_wheel_callback( 0, 0, true, wheel_callback ), wheel );
+	SET_EVENT( emscripten_set_wheel_callback( element, 0, true, wheel_callback ), wheel );
 
-	SET_EVENT( emscripten_set_touchstart_callback( 0, 0, true, touch_callback ), touch start );
+	SET_EVENT( emscripten_set_touchstart_callback( element, 0, true, touch_callback ), touch start );
 	SET_EVENT( emscripten_set_touchend_callback( 0, 0, true, touch_callback ), touch end );
-	SET_EVENT( emscripten_set_touchmove_callback( 0, 0, true, touch_callback ), touch move );
+	SET_EVENT( emscripten_set_touchmove_callback( element, 0, true, touch_callback ), touch move );
 	SET_EVENT( emscripten_set_touchcancel_callback( 0, 0, true, touch_callback ), touch cancel );
 
 	SET_EVENT( emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback ), device orientation );
