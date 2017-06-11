@@ -5,11 +5,18 @@
 #packopt xsize 640
 #packopt ysize 480
 
+; #define WIN_RUN
+
 #define CAPTION "Star: The Gathering JS"
 
 #include "hsp3dish.as"
 #include "../common/imgfont.hsp"
 
+#ifdef WIN_RUN
+#define global DATA_DIR "../../docs/data/"
+#else
+#define global DATA_DIR ""
+#endif
 
 #module
 
@@ -46,13 +53,14 @@
 
 	title CAPTION
 
-	celload "img_star.png", 1
+	celload DATA_DIR + "img_star.png", 1
 	celdiv 1, 32, 32, 16, 16
 	
-	celload "img_pixel.png", 2
+	celload DATA_DIR + "img_pixel.png", 2
 
+	f = DATA_DIR + "f_recp8x8"
 	initImgFont 
-	loadImgFont "f_recp8x8", "f_recp8x8.png"
+	loadImgFont f, f + ".png"
 
 	gsel 0
 	starNum = 100
@@ -68,11 +76,13 @@
 	fps = 60.0
 	
 *init
+	randomize
 	timer dt, fps, 500
 	nowTime = stat
 	dim gstarTime, starNum
 	repeat starNum
 		genStar cnt
+		gstarPosX(cnt) = 999.0
 	loop
 	score = 0
 	n = 3
@@ -80,6 +90,9 @@
 	dim scoreA, n
 	dim scoreX, n
 	dim scoreY, n
+	repeat n
+		scoreX(cnt) = 999
+	loop
 	scoreIdx = 0
 	circleSize = 0.0
 	startTime = nowTime
@@ -126,8 +139,8 @@
 				if (t > 0) {
 					scoreT(scoreIdx) = nowTime
 					scoreA(scoreIdx) = t
-					scoreX(scoreIdx) = mousex
-					scoreY(scoreIdx) = mousey - 30
+					scoreX(scoreIdx) = limit(mousex, 40, 440)
+					scoreY(scoreIdx) = limit(mousey - 30, 40, 420)
 					scoreIdx++
 					scoreIdx \= 3
 				}
@@ -154,12 +167,12 @@
 		starPosX(cnt) += starVelX(cnt) * (starPreV(cnt) - v)
 		starPosY(cnt) += starVelY(cnt) * (starPreV(cnt) - v)
 		starPreV(cnt) = v
-		if (starPosX(cnt) < 80) {
-			starPosX(cnt) = 160.0 - starPosX(cnt)
+		if (starPosX(cnt) < 0) {
+			starPosX(cnt) = -starPosX(cnt)
 			starVelX(cnt) = -starVelX(cnt)
 		}
-		if (starPosX(cnt) > 560) {
-			starPosX(cnt) = 1120.0 - starPosX(cnt)
+		if (starPosX(cnt) > 480) {
+			starPosX(cnt) = 960.0 - starPosX(cnt)
 			starVelX(cnt) = -starVelX(cnt)
 		}
 		if (starPosY(cnt) < 0) {
@@ -203,36 +216,30 @@
 	color 255, 255, 255
 	drawCircle mousex, mousey, circleSize
 	gmode 3, , , 180 - scene * 60
-	abox 80,   0, 480, 30
-	abox 80, 450, 480, 30
+	abox 0,   0, 480, 30
+	abox 0, 450, 480, 30
 	gmode 5, , , 255
 	setImgFontAttr 3, 3, 4
-	drawImgStrR str(score), 250, 4
-	drawImgStrR strf("%.1f", double(remainTime) / 1000), 440, 4
+	drawImgStrR str(score), 170, 4
+	drawImgStrR strf("%.1f", double(remainTime) / 1000), 360, 4
 	setImgFontAttr 1, 1, 2
-	drawImgStrR strf("%d fps", fps), 558, 466
+	drawImgStrR strf("%d fps", fps), 478, 466
 	color 255, 255, 255
-	boxf 560 - dt * 2, 477, 558, 478
+	boxf 480 - dt * 2, 477, 478, 478
 	if (scene == 0) {
 		elptime = nowTime - ttime
 		gmode 3, , , sin(0.00095 * elptime) * 20 + 160
-		abox 80, 160, 480, 160
+		abox 0, 160, 480, 160
 		gmode 5, , , 255
 		setImgFontAttr 3, 3, 4
-		drawImgStrC CAPTION, 320, 190
+		drawImgStrC CAPTION, 240, 190
 		if (elptime > 1000) {
 			y = limit(sin(0.00095 * elptime) * 10 * (elptime > 28000) + 270 ,0, 270)
 			setImgFontAttr 2, 2, 3
-			drawImgStrC "CLICK to start", 320, y
+			drawImgStrC "CLICK/TAP to start", 240, y
 		}
 	}
-	color 255, 255, 255
-	boxf 0, , 80
-	boxf 560
-	pos -100, 0
-	mes "0"
 	redraw
-	getreq t, SYSREQ_PLATFORM
 	await 1
 	goto *mainLoop
 
