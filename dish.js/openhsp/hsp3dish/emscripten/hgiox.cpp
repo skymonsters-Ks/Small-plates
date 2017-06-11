@@ -680,18 +680,18 @@ void hgio_setOrigin( int x, int y )
 
 void hgio_scale_point( int xx, int yy, int &x, int & y )
 {
+	if ( xx < _originX ) {
+		xx = _originX;
+	} else if ( xx >= _sizex ) {
+		xx = _sizex - 1;
+	}
+	if ( yy < _originY ) {
+		yy = _originY;
+	} else if ( yy >= _sizey ) {
+		yy = _sizey - 1;
+	}
 	x = ( xx - _originX ) * _rateX;
 	y = ( yy - _originY ) * _rateY;
-	if ( x < _originX ) {
-		x = _originX;
-	} else if ( x >= _bgsx ) {
-		x = _bgsx - 1;
-	}
-	if ( y < _originY ) {
-		y = _originY;
-	} else if ( y >= _bgsy ) {
-		y = _bgsy - 1;
-	}
 }
 
 /*-------------------------------------------------------------------------------*/
@@ -715,6 +715,11 @@ int hgio_getHeight( void )
 	return _bgsy;
 }
 
+void hgio_getSize( int &sx, int &sy )
+{
+	sx = _sizex;
+	sy = _sizey;
+}
 
 void hgio_setfilter( int type, int opt )
 {

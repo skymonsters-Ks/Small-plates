@@ -96,16 +96,14 @@ bool get_key_state(int sym)
 	return keys[sym];
 }
 
-double getCanvasRate( void )
+void getCanvasRate( double &rx, double &ry )
 {
-	double cx = 0.0, cy = 0.0;
-	int sx = hgio_getWidth();
+	double cx, cy;
+	int sx, sy;
 	emscripten_get_element_css_size( 0, &cx, &cy );
-	if (( cx < 1.0 ) || ( sx < 1 )) {
-		return 1.0;
-	} else {
-		return cx / sx;
-	}
+	hgio_getSize( sx, sy );
+	rx = (( cx < 1.0 ) || ( sx < 1 )) ? 1.0 : cx / sx;
+	ry = (( cy < 1.0 ) || ( sy < 1 )) ? 1.0 : cy / sy;
 }
 
 EM_BOOL key_callback( int eventType, const EmscriptenKeyboardEvent *e, void *userData )
@@ -117,8 +115,9 @@ EM_BOOL key_callback( int eventType, const EmscriptenKeyboardEvent *e, void *use
 
 EM_BOOL mouse_callback( int eventType, const EmscriptenMouseEvent *e, void *userData )
 {
-	double cr = getCanvasRate();
-	hgio_touch( e->canvasX / cr, e->canvasY / cr, e->buttons );
+	double crx, cry;
+	getCanvasRate( crx, cry );
+	hgio_touch( e->canvasX / crx, e->canvasY / cry, e->buttons );
 	return 0;
 }
 
@@ -133,11 +132,12 @@ EM_BOOL wheel_callback( int eventType, const EmscriptenWheelEvent *e, void *user
 
 EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *userData )
 {
-	double cr = getCanvasRate();
+	double crx, cry;
+	getCanvasRate( crx, cry );
 	for( int i = 0; i < e->numTouches; i++ ) {
 		const EmscriptenTouchPoint *t = &e->touches[i];
 		bool touch = ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) || ( eventType == EMSCRIPTEN_EVENT_TOUCHMOVE );
-		hgio_mtouchid( t->identifier, t->canvasX / cr, t->canvasY / cr, touch, i );
+		hgio_mtouchid( t->identifier, t->canvasX / crx, t->canvasY / cry, touch, i );
 	}
 	return 0;
 }
