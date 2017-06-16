@@ -37,8 +37,10 @@ typedef struct MMM
 	char	*fname;			//	sound filename (sbstr)
 	// int		vol;
 	// int		pan;
+#ifdef HSPEMSCRIPTEN
 	double	start;
 	double	end;
+#endif
 	
 	Mix_Chunk	*chunk;
 	int		channel;
@@ -82,7 +84,7 @@ void MMMan::DeleteBank( int bank )
 
 	m = &(mem_snd[bank]);
 	if ( m->flag == MMDATA_INTWAVE ) {
-		StopBank( m );
+		Stop();
 		Mix_FreeChunk( m->chunk );
 	}
 	lpSnd = sndbank( bank );
@@ -120,7 +122,7 @@ int MMMan::SearchBank( int num )
 }
 
 
-MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, double start, double end )
+MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 {
 	int bank;
 	MMM *m;
@@ -143,10 +145,20 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, doubl
 	// m->pause_flag = 0;
 	// m->vol = 0;
 	// m->pan = 0;
-	m->start = start;
-	m->end = end;
 	return m;
 }
+
+#ifdef HSPEMSCRIPTEN
+MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, double start, double end )
+{
+	MMM *m = SetBank( num, flag, opt, mempt, fname );
+	if ( m != NULL ) {
+		m->start = start;
+		m->end = end;
+	}
+	return m;
+}
+#endif
 
 
 void MMMan::ClearAllBank( void )
@@ -221,38 +233,34 @@ void MMMan::PlayBank( MMM *mmm )
 
 int MMMan::BankLoad( MMM *mmm, char *fname )
 {
-	if ( mmm == NULL ) return -9;
+	if ( mmm == NULL ) return -1;
 	mmm->chunk = Mix_LoadWAV( fname );
 	mmm->channel = mmm->num;
 	return 0;
 }
 
 
-int MMMan::Load( char *fname, int num, int opt, double start, double end )
+int MMMan::Load( char *fname, int num, int opt )
 {
-	//		Load sound to bank
-	//			opt : 0=normal/1=loop/2=wait/3=continuous
-	//
 	if ( num < 0 || num >= MIX_MAX_CHANNEL ) return -1;
-	int flag,res;
-	MMM *mmm;
-
-	flag = MMDATA_INTWAVE;
-	mmm = SetBank( num, flag, opt, NULL, fname, start, end );
-
-	if ( mmm != NULL ) {
-		res = BankLoad( mmm, fname );
-		if ( res ) {
-			mmm->flag = MMDATA_NONE;
-			Alertf( "[MMMan] Failed %s on bank #%d (%d)",fname,num,res );
-			return -1;
-		}
-		//if ( opt == 1 ) SetLoopBank( mmm, opt );
-	}
-	Alertf( "[MMMan] Loaded %s on bank #%d",fname,num );
-	return 0;
+	MMM *mmm = SetBank( num, MMDATA_INTWAVE, opt, NULL, fname );
+	return BankLoad( mmm, fname );
 }
 
+#ifdef HSPEMSCRIPTEN
+int MMMan::Load( char *fname, int num, int opt, double start, double end )
+{
+	if ( num < 0 || num >= MIX_MAX_CHANNEL ) return -1;
+	MMM *mmm = SetBank( num, MMDATA_INTWAVE, opt, NULL, fname, start, end );
+	return BankLoad( mmm, fname );
+}
+#endif
+
+
+int MMMan::Play( int num )
+{
+	return Play( num, -1 );
+}
 
 int MMMan::Play( int num, int ch )
 {
@@ -268,7 +276,11 @@ int MMMan::Play( int num, int ch )
 		if ( ch >= 0 && ch < MIX_MAX_CHANNEL ) {
 			bool loop = m->opt & 1;
 			Mix_HaltChannel( ch );
+#ifdef HSPEMSCRIPTEN
 			Mix_PlayChannel( ch, m->chunk, loop ? -1 : 0 , m->start, m->end );
+#else
+			Mix_PlayChannel( ch, m->chunk, loop ? -1 : 0 );
+#endif
 		}
 	}
 	return 0;

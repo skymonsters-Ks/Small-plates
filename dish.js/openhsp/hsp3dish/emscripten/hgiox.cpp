@@ -678,8 +678,9 @@ void hgio_setOrigin( int x, int y )
     _originY=y;
 }
 
-void hgio_scale_point( int xx, int yy, int &x, int & y )
+void hgio_scale_point( int xx, int yy, int &x, int &y )
 {
+#ifdef HSPEMSCRIPTEN
 	if ( xx < _originX ) {
 		xx = _originX;
 	} else if ( xx >= _sizex ) {
@@ -690,6 +691,7 @@ void hgio_scale_point( int xx, int yy, int &x, int & y )
 	} else if ( yy >= _sizey ) {
 		yy = _sizey - 1;
 	}
+#endif
 	x = ( xx - _originX ) * _rateX;
 	y = ( yy - _originY ) * _rateY;
 }
@@ -748,7 +750,7 @@ int hgio_title( char *str1 )
 int hgio_stick( int actsw )
 {
 	int ckey = 0;
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifdef HSPEMSCRIPTEN
 	if ( get_key_state(37) )        ckey|=1<<0;  // Left
 	if ( get_key_state(38) )        ckey|=1<<1;  // Up
 	if ( get_key_state(39) )        ckey|=1<<2;  // Right
@@ -771,11 +773,22 @@ int hgio_stick( int actsw )
 	if ( get_key_state(87) )        ckey|=1<<17;  // W
 #else
 	if ( mouse_btn ) ckey|=256;	// mouse_l
+#ifdef HSPLINUX
+	if ( get_key_state(SDLK_LEFT) )  ckey|=1;		// [left]
+	if ( get_key_state(SDLK_UP) )    ckey|=2;		// [up]
+	if ( get_key_state(SDLK_RIGHT) ) ckey|=4;		// [right]
+	if ( get_key_state(SDLK_DOWN) )  ckey|=8;		// [down]
+	if ( get_key_state(SDLK_SPACE) ) ckey|=16;		// [spc]
+	if ( get_key_state(SDLK_RETURN) )ckey|=32;		// [ent]
+	if ( get_key_state(SDLK_LCTRL) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(SDLK_ESCAPE) )ckey|=128;	// [esc]
+	if ( get_key_state(SDLK_TAB) )   ckey|=1024;	// [tab]
+#endif
 #endif
 	return ckey;
 }
 
-#if defined(HSPEMSCRIPTEN)
+#if HSPEMSCRIPTEN
 bool hgio_getkey( int kcode )
 {
 	bool res = false;
