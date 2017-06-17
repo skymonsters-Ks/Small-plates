@@ -12,7 +12,7 @@ controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Mo
 
 var Module = {
 
-	TOTAL_MEMORY: 1024 * 1024 * global_data_env.mem,
+	TOTAL_MEMORY: 1024 * 1024 * (global_data_env.mem ? global_data_env.mem : 32),
 	preRun: [],
 	postRun: [],
 
@@ -68,11 +68,15 @@ var Module = {
 Module.setStatus('Downloading...');
 
 Module.preRun.push(function() {
-	ENV.HSP_WX = String(global_data_env.wx);
-	ENV.HSP_WY = String(global_data_env.wy);
-	ENV.HSP_SX = String(global_data_env.wx * global_data_env.rate);
-	ENV.HSP_SY = String(global_data_env.wy * global_data_env.rate);
-	ENV.HSP_LIMIT_STEP = String(global_data_env.step);
+	var wx = global_data_env.wx ? global_data_env.wx : 640;
+	var wy = global_data_env.wy ? global_data_env.wy : 480;
+	var rate = global_data_env.rate ? global_data_env.rate : 1;
+	var step = global_data_env.step ? global_data_env.step : 5000;
+	ENV.HSP_WX = String(wx);
+	ENV.HSP_WY = String(wy);
+	ENV.HSP_SX = String(wx * rate);
+	ENV.HSP_SY = String(wy * rate);
+	ENV.HSP_LIMIT_STEP = String(step);
 	ENV.HSP_AUTOSCALE = '0';
 	ENV.HSP_FPS = '0';
 });
