@@ -8,7 +8,7 @@ var controlsElement = document.getElementById('controls');
 var outputElement = document.getElementById('output');
 var outputChecker = false;
 
-controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullScreen(0, 1)">';
+controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullScreen(0, 0)">';
 
 var Module = {
 
@@ -72,16 +72,13 @@ Module.preRun.push(function() {
 	var wy = global_data_env.wy ? global_data_env.wy : 480;
 	var rate = global_data_env.rate ? global_data_env.rate : 1;
 	var step = global_data_env.step ? global_data_env.step : 5000;
-	var sx = wx * rate;
-	var sy = wy * rate;
 	ENV.HSP_WX = String(wx);
 	ENV.HSP_WY = String(wy);
-	ENV.HSP_SX = String(sx);
-	ENV.HSP_SY = String(sy);
+	ENV.HSP_SX = String(wx * rate);
+	ENV.HSP_SY = String(wy * rate);
 	ENV.HSP_LIMIT_STEP = String(step);
 	ENV.HSP_AUTOSCALE = '0';
 	ENV.HSP_FPS = '0';
-	document.getElementById('viewport').setAttribute('content', 'width=' + (sx + 100) + ',initial-scale=1');
 });
 
 (function() {
