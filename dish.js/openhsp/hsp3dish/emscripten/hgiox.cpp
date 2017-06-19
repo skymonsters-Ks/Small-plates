@@ -422,8 +422,7 @@ void hgio_reset( void )
     glEnable(GL_POINT_SMOOTH);
 
     //前処理
-    // glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MAG_FILTER,GL_NEAREST);
-    // glTexParameteri(GL_TEXTURE_2D,GL_TEXTURE_MIN_FILTER,GL_NEAREST);
+    hgio_setFilterMode( 0 );
 
 	//テクスチャ設定リセット
 	TexReset();
