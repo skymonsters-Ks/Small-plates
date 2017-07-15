@@ -6,7 +6,6 @@ var statusElement = document.getElementById('status');
 var statElement = document.getElementById('stat');
 var controlsElement = document.getElementById('controls');
 var outputElement = document.getElementById('output');
-var outputChecker = false;
 
 controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullScreen(0, 0)">';
 
@@ -18,11 +17,7 @@ var Module = {
 
 	print: function(text) {
 		if (text) {
-			if (!outputChecker) {
-				outputChecker = true;
-				outputElement.value = ''; // clear browser cache
-			}
-			outputElement.value += text + '\n';
+			outputElement.innerHTML += text + '<br>';
 			// outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
 			console.log(text);
 		}
@@ -46,7 +41,7 @@ var Module = {
 		if (!text) {
 			statElement.style.display = 'none';
 			outputElement.style.display = 'block';
-			if (outputElement.value.indexOf('INIT') >= 0) {
+			if (outputElement.textContent.indexOf('INIT') >= 0) {
 				controlsElement.style.display = 'inline-block';
 			}
 		} else {

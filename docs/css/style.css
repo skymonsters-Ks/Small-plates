@@ -67,7 +67,7 @@ canvas.emscripten {
 
 #output {
 	width: 95%;
-	height: 34px;
+	/* height: 34px; */
 	margin: 1.2em auto;
 	display: none;
 	color: #888;
@@ -95,7 +95,7 @@ canvas.emscripten {
 }
 
 #footer {
-	padding: 30px 0 20px;
+	padding: 40px 0 20px;
 	margin-top: -20px;
 	background: #dd9;
 	background: linear-gradient(to top, #cc8, #fff);
