@@ -1051,7 +1051,8 @@ var LibrarySDL = {
       for (var i = 0; i < num; i++) {
         SDL.channels[i] = {
           audio: null,
-          volume: 1.0
+          volume: 1.0,
+		  pan: 0.0
         };
       }
     },
@@ -1073,11 +1074,12 @@ var LibrarySDL = {
       return ret;
     },
 
-    setPannerPosition: function(info, x, y, z) {
+    setPannerPosition: function(info, p) {
       if (!info) return;
+      info.pan = p;
       if (info.audio) {
         if (info.audio.webAudioPannerNode) {
-          info.audio.webAudioPannerNode['setPosition'](x, y, z);
+          info.audio.webAudioPannerNode['pan']['value'] = p;
         }
       }
     },
@@ -1098,14 +1100,12 @@ var LibrarySDL = {
         audio.webAudioNode = SDL.audioContext['createBufferSource']();
         audio.webAudioNode['buffer'] = webAudio.decodedBuffer;
         audio.webAudioNode['loop'] = audio.loop;
+        audio.webAudioNode['loopStart'] = audio.loopStart;
+        audio.webAudioNode['loopEnd'] = audio.loopEnd;
         audio.webAudioNode['onended'] = function() { audio['onended'](); } // For <media> element compatibility, route the onended signal to the instance.
 
-        audio.webAudioPannerNode = SDL.audioContext['createPanner']();
-        // avoid Chrome bug
-        // If posz = 0, the sound will come from only the right.
-        // By posz = -0.5 (slightly ahead), the sound will come from right and left correctly.
-        audio.webAudioPannerNode["setPosition"](0, 0, -.5);
-        audio.webAudioPannerNode['panningModel'] = 'equalpower';
+        audio.webAudioPannerNode = SDL.audioContext['createStereoPanner']();
+		audio.webAudioPannerNode['pan']['value'] = audio.pan;
 
         // Add an intermediate gain node to control volume.
         audio.webAudioGainNode = SDL.audioContext['createGain']();
@@ -2579,7 +2579,7 @@ var LibrarySDL = {
 
     // Set the z coordinate a little forward, otherwise there won't be any
     // smooth transition between left and right.
-    SDL.setPannerPosition(SDL.channels[channel], right - left, 0, 0.1);
+    SDL.setPannerPosition(SDL.channels[channel], right - left);
     return 1;
   },
 
@@ -2618,7 +2618,7 @@ var LibrarySDL = {
     if (rwops.filename !== undefined) {
       filename = PATH.resolve(rwops.filename);
       var raw = Module["preloadedAudios"][filename];
-      if (!raw) {
+      // if (!raw) {
         if (raw === null) Module.printErr('Trying to reuse preloaded audio, but freePreloadedMediaOnUse is set!');
         if (!Module.noAudioDecoding) Runtime.warnOnce('Cannot find preloaded audio ' + filename);
 
@@ -2629,7 +2629,7 @@ var LibrarySDL = {
           Module.printErr('Couldn\'t find file for: ' + filename);
           return 0;
         }
-      }
+      // }
       if (Module['freePreloadedMediaOnUse']) {
         Module["preloadedAudios"][filename] = null;
       }
@@ -2733,7 +2733,7 @@ var LibrarySDL = {
   Mix_ReserveChannels: function(num) {
     SDL.channelMinimumNumber = num;
   },
-  Mix_PlayChannel: function(channel, id, loops) {
+  Mix_PlayChannel: function(channel, id, loops, start, end) {
     // TODO: handle fixed amount of N loops. Currently loops either 0 or infinite times.
 
     // Get the audio element associated with the ID
@@ -2780,7 +2780,10 @@ var LibrarySDL = {
     channelInfo.audio = audio;
     // TODO: handle N loops. Behavior matches Mix_PlayMusic
     audio.loop = loops != 0;
+	audio.loopStart = start;
+	audio.loopEnd = end;
     audio.volume = channelInfo.volume;
+	audio.pan = channelInfo.pan;
     audio.play();
     return channel;
   },
