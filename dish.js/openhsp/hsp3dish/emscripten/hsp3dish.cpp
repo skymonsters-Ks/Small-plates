@@ -193,6 +193,9 @@ static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtit
 
 	// glutCreateWindow(windowtitle);
 
+	// htmlのinput要素などの入力ができなくなるためSDLのキーボードキャプチャを無効化
+	EM_ASM({ Module['doNotCaptureKeyboard'] = true });
+
 	SDL_Surface *screen;
 
 	// Slightly different SDL initialization
@@ -384,6 +387,15 @@ static int hsp3dish_devprm( char *name, char *value )
 		}, value);
 		return 0;
 	}
+	char *tp = strtok( name, "." );
+	if ( strcmp( tp, "value" )==0 ) {
+		tp = strtok( NULL, "." );
+		if ( tp != NULL ) {
+			EM_ASM_({
+				document.getElementById(Pointer_stringify($0)).value = Pointer_stringify($1)
+			}, tp, value);
+		}
+	}
 	return -1;
 }
 
@@ -424,6 +436,15 @@ static char *hsp3dish_devinfo( char *name )
 		return (char*)EM_ASM_INT_V({
 			return (allocate(intArrayFromString(window.location.search.substring(1)), 'i8', ALLOC_STACK));
 		});
+	}
+	char *tp = strtok( name, "." );
+	if ( strcmp( tp, "value" )==0 ) {
+		tp = strtok( NULL, "." );
+		if ( tp != NULL ) {
+			return (char*)EM_ASM_INT({
+				return (allocate(intArrayFromString(document.getElementById(Pointer_stringify($0)).value), 'i8', ALLOC_STACK));
+			}, tp);
+		}
 	}
 	return NULL;
 }
