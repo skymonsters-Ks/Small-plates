@@ -43,6 +43,7 @@ var Module = {
 			outputElement.style.display = 'block';
 			if (outputElement.textContent.indexOf('INIT') >= 0) {
 				controlsElement.style.display = 'inline-block';
+				Module.canvas.focus();
 			}
 		} else {
 			console.log(text);
@@ -68,6 +69,7 @@ Module.preRun.push(function() {
 	ENV.HSP_SX = String(global_data_env.wx * global_data_env.rate);
 	ENV.HSP_SY = String(global_data_env.wy * global_data_env.rate);
 	ENV.HSP_LIMIT_STEP = String(global_data_env.step);
+	ENV.HSP_CAPTURE_KEY = String(global_data_env.cap);
 	ENV.HSP_AUTOSCALE = '0';
 	ENV.HSP_FPS = '0';
 });

@@ -61,6 +61,7 @@ static int hsp_fps;
 static int hsp_limit_step_per_frame;
 static std::string syncdir;
 static bool fs_initialized = false;
+static int capkey;
 
 //static	HWND m_hWnd;
 
@@ -106,6 +107,11 @@ void getCanvasRate( double &rx, double &ry )
 	ry = (( cy < 1.0 ) || ( sy < 1 )) ? 1.0 : cy / sy;
 }
 
+void focusCanvas()
+{
+	if ( capkey > 0 ) EM_ASM({ Module.canvas.focus(); });
+}
+
 EM_BOOL key_callback( int eventType, const EmscriptenKeyboardEvent *e, void *userData )
 {
 	// 'keyCode' attribute is deprecated.
@@ -118,6 +124,9 @@ EM_BOOL mouse_callback( int eventType, const EmscriptenMouseEvent *e, void *user
 	double crx, cry;
 	getCanvasRate( crx, cry );
 	hgio_touch( e->canvasX / crx, e->canvasY / cry, e->buttons );
+	if ( eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ) {
+		focusCanvas();
+	}
 	return 0;
 }
 
@@ -138,6 +147,9 @@ EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *user
 		const EmscriptenTouchPoint *t = &e->touches[i];
 		bool touch = ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) || ( eventType == EMSCRIPTEN_EVENT_TOUCHMOVE );
 		hgio_mtouchid( t->identifier, t->canvasX / crx, t->canvasY / cry, touch, i );
+	}
+	if ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) {
+		focusCanvas();
 	}
 	return 0;
 }
@@ -165,7 +177,11 @@ void initHtmlEvent()
 	EMSCRIPTEN_RESULT ret;
 	const char *element = "#canvas";
 	
-	SET_EVENT( emscripten_set_keydown_callback( 0, 0, true, key_callback ), key down );
+	if ( capkey == 2 ) {
+		SET_EVENT( emscripten_set_keydown_callback( element, 0, true, key_callback ), key down );
+	} else {
+		SET_EVENT( emscripten_set_keydown_callback( 0, 0, true, key_callback ), key down );
+	}
 	SET_EVENT( emscripten_set_keyup_callback( 0, 0, true, key_callback ), key up );
 
 	SET_EVENT( emscripten_set_mousedown_callback( element, 0, true, mouse_callback ), mouse down );
@@ -193,8 +209,11 @@ static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtit
 
 	// glutCreateWindow(windowtitle);
 
-	// htmlのinput要素などの入力ができなくなるためSDLのキーボードキャプチャを無効化
-	EM_ASM({ Module['doNotCaptureKeyboard'] = true });
+	if ( capkey > 0 ) {
+		// SDL のキーボードキャプチャを無効化して html の input/textare 要素へ入力できるようにする
+		// ただし backspace/tab などの操作も有効になる
+		EM_ASM({ Module['doNotCaptureKeyboard'] = true });
+	}
 
 	SDL_Surface *screen;
 
@@ -377,7 +396,7 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 //		デバイスコントロール関連
 /*----------------------------------------------------------*/
 static HSP3DEVINFO *mem_devinfo;
-static int devinfo_dummy;
+static int devinfoi_res;
 
 static int hsp3dish_devprm( char *name, char *value )
 {
@@ -418,10 +437,17 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 
 static int *hsp3dish_devinfoi( char *name, int *size )
 {
-	devinfo_dummy = 0;
+	if ( strcmp( name, "focus" )==0 ) {
+		if ( capkey == 0 ) {
+			devinfoi_res = 1;
+		} else {
+			devinfoi_res = EM_ASM_INT_V({ return document.activeElement == Module.canvas; });
+		}
+		*size = 1;
+		return &devinfoi_res;
+	}
 	*size = -1;
 	return NULL;
-//	return &devinfo_dummy;
 }
 
 static char *hsp3dish_devinfo( char *name )
@@ -573,6 +599,12 @@ int hsp3dish_init( char *startfile )
 	hsp_limit_step_per_frame = 5000;
 	if ( env_step ) {
 		hsp_limit_step_per_frame = atoi( env_step );
+	}
+
+	char *env_cap = getenv( "HSP_CAPTURE_KEY" );
+	capkey = 0;
+	if ( env_cap ) {
+		capkey = atoi( env_cap );
 	}
 
 	// printf("Screen %f %f\n", sx, sy);
