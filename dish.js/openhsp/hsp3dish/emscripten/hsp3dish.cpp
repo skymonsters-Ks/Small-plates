@@ -112,11 +112,21 @@ void focusCanvas()
 	if ( capkey > 0 ) EM_ASM({ Module.canvas.focus(); });
 }
 
+bool hasFocusCanvas()
+{
+	return (bool)EM_ASM_INT_V({ return document.activeElement == Module.canvas; });
+}
+
 EM_BOOL key_callback( int eventType, const EmscriptenKeyboardEvent *e, void *userData )
 {
 	// 'keyCode' attribute is deprecated.
 	keys[e->keyCode] = (eventType == EMSCRIPTEN_EVENT_KEYDOWN);
-	return 0;
+	if ( capkey > 0 && hasFocusCanvas() ) {
+		// フォーカスがある場合は preventDefault
+		return 1;
+	} else {
+		return 0;
+	}
 }
 
 EM_BOOL mouse_callback( int eventType, const EmscriptenMouseEvent *e, void *userData )
@@ -170,6 +180,12 @@ EM_BOOL devicemotion_callback( int eventType, const EmscriptenDeviceMotionEvent 
 	return 0;
 }
 
+EM_BOOL fullscreenchange_callback( int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData )
+{
+	focusCanvas();
+	return 0;
+}
+
 #define SET_EVENT(f, r) ret = (f); if ( ret < 0 ) Alertf( "event setting error: %s (%d)", #r, ret )
 
 void initHtmlEvent()
@@ -197,6 +213,10 @@ void initHtmlEvent()
 
 	SET_EVENT( emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback ), device orientation );
 	SET_EVENT( emscripten_set_devicemotion_callback( 0, true, devicemotion_callback ), device motion );
+	
+	if ( capkey > 0 ) {
+		SET_EVENT( emscripten_set_fullscreenchange_callback( 0, 0, true, fullscreenchange_callback ), fullscreen change );
+	}
 }
 
 static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtitle )
@@ -445,7 +465,7 @@ static int *hsp3dish_devinfoi( char *name, int *size )
 		if ( capkey == 0 ) {
 			devinfoi_res = 1;
 		} else {
-			devinfoi_res = EM_ASM_INT_V({ return document.activeElement == Module.canvas; });
+			devinfoi_res = hasFocusCanvas();
 		}
 		*size = 1;
 		return &devinfoi_res;

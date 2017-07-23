@@ -7,7 +7,7 @@ var statElement = document.getElementById('stat');
 var controlsElement = document.getElementById('controls');
 var outputElement = document.getElementById('output');
 
-controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullScreen(0, 0)">';
+controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullscreen(0, 0)">';
 
 var Module = {
 
