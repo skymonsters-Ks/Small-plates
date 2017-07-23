@@ -212,7 +212,11 @@ static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtit
 	if ( capkey > 0 ) {
 		// SDL のキーボードキャプチャを無効化して html の input/textare 要素へ入力できるようにする
 		// ただし backspace/tab などの操作も有効になる
-		EM_ASM({ Module['doNotCaptureKeyboard'] = true });
+		EM_ASM({
+			Module.canvas.setAttribute('tabindex', 0);
+			Module.canvas.focus();
+			Module['doNotCaptureKeyboard'] = true;
+		});
 	}
 
 	SDL_Surface *screen;

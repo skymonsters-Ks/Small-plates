@@ -43,7 +43,6 @@ var Module = {
 			outputElement.style.display = 'block';
 			if (outputElement.textContent.indexOf('INIT') >= 0) {
 				controlsElement.style.display = 'inline-block';
-				Module.canvas.focus();
 			}
 		} else {
 			console.log(text);
