@@ -348,7 +348,7 @@ static short str2hash( char *msg, int *out_len )
 }
 
 
-static int getCache( char *msg, short mycache, int font_size, int font_style )
+static int getCache( char *msg, short mycache, int font_size, int font_style, char *font_name )
 {
 	//		キャッシュ済みの文字列があればTEXINFを返す
 	//		(存在しない場合はNULL)
@@ -360,15 +360,17 @@ static int getCache( char *msg, short mycache, int font_size, int font_style )
 		if ( t->mode == TEXMODE_MES8 ) {		// メッセージテクスチャだった時
 			if ( t->hash == mycache ) {			// まずハッシュを比べる
 				if ( t->font_size == font_size && t->font_style == font_style ) {	// サイズ・スタイルを比べる
-					if ( t->text ) {
-						if ( strcmp( msg, t->text ) == 0 ) {
-							t->life = TEXMES_CACHE_DEFAULT;			// キャッシュを保持
-							return i;
-						}
-					} else {
-						if ( strcmp( msg, t->buf ) == 0 ) {
-							t->life = TEXMES_CACHE_DEFAULT;			// キャッシュを保持
-							return i;
+					if ( strcmp( t->font_name, font_name ) == 0 ) {
+						if ( t->text ) {
+							if ( strcmp( msg, t->text ) == 0 ) {
+								t->life = TEXMES_CACHE_DEFAULT;			// キャッシュを保持
+								return i;
+							}
+						} else {
+							if ( strcmp( msg, t->buf ) == 0 ) {
+								t->life = TEXMES_CACHE_DEFAULT;			// キャッシュを保持
+								return i;
+							}
 						}
 					}
 				}
@@ -403,7 +405,7 @@ void TexProc( void )
 }
 
 
-int GetCacheMesTextureID( char *msg, int font_size, int font_style )
+int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_name )
 {
 	//		キャッシュ済みのテクスチャIDを返す(OpenGLテクスチャIDを返す)
 	//		(作成されていないメッセージテクスチャは自動的に作成する)
@@ -422,7 +424,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 	mycache = str2hash( msg, &mylen );			// キャッシュを取得
 	if ( mylen <= 0 ) return -1;
 
-	texid = getCache( msg, mycache, font_size, font_style );
+	texid = getCache( msg, mycache, font_size, font_style, font_name );
 	if ( texid >= 0 ) {
 		return texid;							// キャッシュがあった
 	}
@@ -436,6 +438,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 	t->hash = mycache;
 	t->font_size = font_size;
 	t->font_style = font_style;
+	strncpy( t->font_name, font_name, FONT_NAME_BUFFER-1 );
 
 	if ( curmestex >= GetSysReq(SYSREQ_MESCACHE_MAX) ) {	// エントリ数がオーバーしているものは次のフレームで破棄
 		t->life = 0;
@@ -492,11 +495,17 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 	mycache = str2hash( msg, &mylen );			// キャッシュを取得
 	if ( mylen <= 0 ) return -1;
 
-	texid = getCache( msg, mycache, font_size, font_style );
+	texid = getCache( msg, mycache, font_size, font_style, font_name );
 	if ( texid >= 0 ) {
 		return texid;							// キャッシュがあった
 	}
 
+	char fstyle[64] = "";
+	if ( font_style & 1 ) strcat( fstyle, "bold " );
+	if ( font_style & 2 ) strcat( fstyle, "italic " );
+
+	Alertf( "font info: %s, %s", fstyle, font_name );
+	
 	EM_ASM_({
 		var d = document.getElementById('hsp3dishFontDiv');
 		if (!d) {
@@ -507,14 +516,14 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 			d.style.setProperty("position", "absolute");
 			d.style.setProperty("visibility", "hidden");
 		}
-		d.style.setProperty("font", $1 + "px 'sans-serif'");
+		d.style.setProperty("font", Pointer_stringify($2) + $1 + "px " + Pointer_stringify($3) + ",'sans-serif'");
 		document.body.appendChild(d);
 
 		var t = document.createTextNode(Pointer_stringify($0));
 		if (d.hasChildNodes())
 			d.removeChild(d.firstChild);
 		d.appendChild(t);
-		}, msg, font_size);
+		}, msg, font_size, fstyle, font_name);
 	tsx = EM_ASM_INT_V({
 		var d = document.getElementById('hsp3dishFontDiv');
 		return d.clientWidth;
@@ -535,6 +544,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 	t->hash = mycache;
 	t->font_size = font_size;
 	t->font_style = font_style;
+	strncpy( t->font_name, font_name, FONT_NAME_BUFFER-1 );
 
 	if ( curmestex >= GetSysReq(SYSREQ_MESCACHE_MAX) ) {	// エントリ数がオーバーしているものは次のフレームで破棄
 		t->life = 0;
@@ -571,7 +581,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 		document.body.appendChild(canvas);
 
 		var context = canvas.getContext("2d");
-		context.font = $1 + "px 'sans-serif'";
+		context.font = Pointer_stringify($4) + $1 + "px " + Pointer_stringify($5) + ",'sans-serif'";
 
 		var msg = Pointer_stringify($0);
 		context.clearRect ( 0 , 0 , $2 , $3);
@@ -583,7 +593,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style )
 
 		//GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.ALPHA, GLctx.ALPHA, GLctx.UNSIGNED_BYTE, canvas);
 		GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, canvas);
-		}, msg, font_size, t->sx, t->sy);
+		}, msg, font_size, t->sx, t->sy, fstyle, font_name);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);

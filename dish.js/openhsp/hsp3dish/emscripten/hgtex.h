@@ -11,6 +11,7 @@ extern "C" {
 #define TEXINF_MAX 256
 #define TEXMES_CACHE_DEFAULT 8		// キャッシュのデフォルト生存フレーム
 #define TEXMES_NAME_BUFFER 32		// テキストハッシュネーム用バッファサイズ
+#define FONT_NAME_BUFFER 256
 
 // テクスチャ情報
 typedef struct
@@ -30,6 +31,7 @@ short life;			// Text Cache life
 char *text;			// Text Message
 int font_size;		// Text font size
 int font_style;		// Text font style
+char font_name[FONT_NAME_BUFFER];	// Text font name
 char buf[TEXMES_NAME_BUFFER];		// Text Data Buffer
 
 } TEXINF;
@@ -57,7 +59,7 @@ int RegistTexMem( unsigned char *ptr, int size );
 int RegistTex( char *fname );
 int MakeEmptyTex( int width, int height );
 
-int GetCacheMesTextureID( char *msg, int font_size, int font_style );
+int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_name );
 
 
 #ifdef __cplusplus

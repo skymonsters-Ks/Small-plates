@@ -144,15 +144,16 @@ static BMSCR    *mainbm = NULL;
 
 static		BMSCR *backbm;		// 背景消去用のBMSCR(null=NC)
 
-static int		mouse_x;
-static int		mouse_y;
-static int		mouse_btn;
+static int mouse_x;
+static int mouse_y;
+static int mouse_btn;
 
-static	int  font_texid;
-static	int  font_sx, font_sy;
-static	int  mes_sx, mes_sy;
-static	int  font_size;
-static	int  font_style;
+static int font_texid;
+static int font_sx, font_sy;
+static int mes_sx, mes_sy;
+static int font_size;
+static int font_style;
+static char font_name[256];
 
 static GLfloat _line_colors[8];
 static GLfloat _panelColorsTex[16];
@@ -806,6 +807,7 @@ int hgio_font( char *fontname, int size, int style )
 {
 	font_size = size;
 	font_style = style;
+	strncpy( font_name, fontname, 255 );
 #ifdef HSPIOS
     gb_font( size, style, fontname );
 #endif
@@ -1823,7 +1825,7 @@ void hgio_putTexFont( int x, int y, char *msg, int color )
 #ifdef USE_JAVA_FONT
 	int texid;
 	TEXINF *tinf;
-	texid = GetCacheMesTextureID( msg, font_size, font_style );
+	texid = GetCacheMesTextureID( msg, font_size, font_style, font_name );
 	if ( texid >= 0 ) {
 		tinf = GetTex( texid );
 		mes_sx = tinf->width;
