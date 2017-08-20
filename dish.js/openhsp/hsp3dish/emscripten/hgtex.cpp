@@ -507,10 +507,10 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_n
 	Alertf( "font info: %s, %s", fstyle, font_name );
 	
 	EM_ASM_({
-		var d = document.getElementById('hsp3dishFontDiv');
+		var d = document.getElementById('hsp3dishFontPre');
 		if (!d) {
-			d = document.createElement("div");
-			d.id = 'hsp3dishFontDiv';
+			d = document.createElement("pre");
+			d.id = 'hsp3dishFontPre';
 			d.style.setProperty("width", "auto");
 			d.style.setProperty("height", "auto");
 			d.style.setProperty("position", "absolute");
@@ -525,11 +525,11 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_n
 		d.appendChild(t);
 		}, msg, font_size, fstyle, font_name);
 	tsx = EM_ASM_INT_V({
-		var d = document.getElementById('hsp3dishFontDiv');
+		var d = document.getElementById('hsp3dishFontPre');
 		return d.clientWidth;
 	});
 	tsy = EM_ASM_INT_V({
-		var d = document.getElementById('hsp3dishFontDiv');
+		var d = document.getElementById('hsp3dishFontPre');
 		return d.clientHeight;
 	});
 	//printf("texsize %dx%d '%s'\n", tsx, tsy, msg);
