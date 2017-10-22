@@ -503,9 +503,13 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_n
 	char fstyle[64] = "";
 	if ( font_style & 1 ) strcat( fstyle, "bold " );
 	if ( font_style & 2 ) strcat( fstyle, "italic " );
-
-	Alertf( "font info: %s, %s", fstyle, font_name );
 	
+	char fname[FONT_NAME_BUFFER + 1] = "";
+	if ( strlen( font_name ) ) {
+		strcat( fname, font_name );
+		strcat( fname, "," );
+	}
+
 	EM_ASM_({
 		var d = document.getElementById('hsp3dishFontPre');
 		if (!d) {
@@ -516,14 +520,14 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_n
 			d.style.setProperty("position", "absolute");
 			d.style.setProperty("visibility", "hidden");
 		}
-		d.style.setProperty("font", Pointer_stringify($2) + $1 + "px " + Pointer_stringify($3) + ",'sans-serif'");
+		d.style.setProperty("font", Pointer_stringify($2) + $1 + "px " + Pointer_stringify($3) + "'sans-serif'");
 		document.body.appendChild(d);
 
 		var t = document.createTextNode(Pointer_stringify($0));
 		if (d.hasChildNodes())
 			d.removeChild(d.firstChild);
 		d.appendChild(t);
-		}, msg, font_size, fstyle, font_name);
+		}, msg, font_size, fstyle, fname);
 	tsx = EM_ASM_INT_V({
 		var d = document.getElementById('hsp3dishFontPre');
 		return d.clientWidth;
@@ -581,7 +585,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_n
 		document.body.appendChild(canvas);
 
 		var context = canvas.getContext("2d");
-		context.font = Pointer_stringify($4) + $1 + "px " + Pointer_stringify($5) + ",'sans-serif'";
+		context.font = Pointer_stringify($4) + $1 + "px " + Pointer_stringify($5) + "'sans-serif'";
 
 		var msg = Pointer_stringify($0);
 		context.clearRect ( 0 , 0 , $2 , $3);
@@ -593,7 +597,7 @@ int GetCacheMesTextureID( char *msg, int font_size, int font_style, char *font_n
 
 		//GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.ALPHA, GLctx.ALPHA, GLctx.UNSIGNED_BYTE, canvas);
 		GLctx.texImage2D(GLctx.TEXTURE_2D, 0, GLctx.RGBA, GLctx.RGBA, GLctx.UNSIGNED_BYTE, canvas);
-		}, msg, font_size, t->sx, t->sy, fstyle, font_name);
+		}, msg, font_size, t->sx, t->sy, fstyle, fname);
 
 	glBindTexture(GL_TEXTURE_2D, 0);
 	//glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
