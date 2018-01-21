@@ -96,7 +96,8 @@
 			continue
 		}
 	loop
-	dataName = "'ax/" + axName + "'," + strtrim(dataName, 0, ',')
+	dataName = "'ax/" + axName + "'," + dataName
+	dataName = strtrim(dataName, 0, ',')
 	
 	noteload "temp.html"
 	strrep fd, "$$titleName$$", titleName
