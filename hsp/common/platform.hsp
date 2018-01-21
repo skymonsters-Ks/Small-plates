@@ -1,0 +1,29 @@
+#module
+
+#deffunc _initPlatform
+
+	getreq pf, SYSREQ_PLATFORM
+	return
+
+#defcfunc cnvName str _dn
+
+	if (pf == PLATFORM_WEBGL) {
+		return _dn
+	} else {
+		return "../../docs/data/" + _dn
+	}
+
+#undef mmload
+#deffunc mmload_ str _fn, int _p1, int _p2, double _p3, double _p4
+#define global mmload(%1, %2=0, %3=0, %4=0, %5=36000) mmload_ %1, %2, %3, %4, %5
+
+	if (pf == PLATFORM_WEBGL) {
+		mmload@hsp _fn, _p1, _p2, _p3, _p4
+	} else {
+		mmload@hsp _fn, _p1, _p2
+	}
+	return
+	
+#global
+
+	_initPlatform

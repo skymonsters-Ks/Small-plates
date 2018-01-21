@@ -1,16 +1,21 @@
-;$a>ax_citest.ax
+;$a>citest.ax
+
+;$data wx:480,wy:800,mem:16
+#define TITLE_NAME         "cirrus test"
+#define DATA_FONT          "font/recp8x8"
+#define DATA_FONTIMG       "font/recp8x8.png"
+#define DATA_STAR          "image/star.png"
+#define DATA_BGM           "bgm/aqtia.ogg"
+#define DATA_SE_DELBLOCK   "se/pyun.wav"
+#define DATA_SE_PICKBLOCK  "se/pyu.wav"
+#define DATA_SE_SETCHAR    "se/py.wav"
+#define DATA_SE_DELCHAR    "se/ti.wav"
+#define DATA_SE_NEWLINE    "se/za.wav"
+;$end
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 #include "../common/imgfont.hsp"
-
-#define DAT_FONT "f_recp8x8"
-#define DAT_STAR "img_star.png"
-#define DAT_BGM "bgm_aqtia.ogg"
-#define DAT_SE_DELBLOCK "se_pyun.wav"
-#define DAT_SE_PICKBLOCK "se_pyu.wav"
-#define DAT_SE_SETCHAR "se_py.wav"
-#define DAT_SE_DELCHAR "se_ti.wav"
-#define DAT_SE_NEWLINE "se_za.wav"
 
 #module
 
@@ -40,26 +45,24 @@
 
 *start
 
-	getreq platform, SYSREQ_PLATFORM
-
 	qreset
 	
 	qmat , mat_wire, $cccccc, $cccccc
 	
 	initImgFont
-	loadImgFont DAT_FONT, DAT_FONT + ".png"
+	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
 	setImgFontAttr 2, 2
 
-	celload DAT_STAR
+	celload cnvName(DATA_STAR)
 	img_star = stat
 	celdiv img_star, 32, 32, 16, 17
 	
-	mmload DAT_BGM, 0, 1, 9.9995
-	mmload DAT_SE_DELBLOCK, 1
-	mmload DAT_SE_PICKBLOCK, 2
-	mmload DAT_SE_SETCHAR, 3 : mmvol 3, -300
-	mmload DAT_SE_DELCHAR, 4 : mmvol 4, -800
-	mmload DAT_SE_NEWLINE, 5 : mmvol 5, -300
+	mmload cnvName(DATA_BGM), 0, 1, 9.9995
+	mmload cnvName(DATA_SE_DELBLOCK), 1
+	mmload cnvName(DATA_SE_PICKBLOCK), 2
+	mmload cnvName(DATA_SE_SETCHAR), 3 : mmvol 3, -300
+	mmload cnvName(DATA_SE_DELCHAR), 4 : mmvol 4, -800
+	mmload cnvName(DATA_SE_NEWLINE), 5 : mmvol 5, -300
 	
 	mmvol 0, -700
 	mmplay 0
@@ -232,11 +235,7 @@
 	
 	redraw 1
 	
-	if (platform == 0) {
-		await 15
-	} else {
-		await 1
-	}
+	await 15
 	
 	goto *mainLoop
 

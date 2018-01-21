@@ -1,0 +1,112 @@
+
+#packopt name "genhtml"
+
+#include "hsp3utf.as"
+
+#uselib "shell32"
+#func dragAcceptFiles "DragAcceptFiles" int, int
+#func dragQueryFile   "DragQueryFileA" int, int, sptr, int
+#func dragFinish      "DragFinish" int
+
+	title "genHtml"
+	oncmd gosub *evDropFiles, $233  ; WM_DROPFILES
+	dragAcceptFiles hwnd, 1
+	sdim buf, 32000
+	buf = "drop folders here"
+	mesbox buf, 640, 480, 0
+	iBox = stat
+	sdim fn, 1024
+	stop
+
+*evDropFiles
+	hDrop = wparam
+	dragQueryFile hDrop, -1, 0, 0
+	num = stat
+	buf = ""
+	repeat num
+		sdim ts, 512
+		dragQueryFile hDrop, cnt, varptr(ts), 512
+		fn = cnvatos(ts)
+		dirlist x, fn, 5
+		if (stat) {
+			gosub *genHtml
+		}
+	loop
+	dragFinish hDrop
+	objprm iBox, buf
+	return
+
+*genHtml
+	fn += "\\main.hsp"
+	exist fn
+	if (strsize <= 0) : return
+	sdim fd
+	notesel fd
+	noteload fn
+	sdim axName
+	sdim envData
+	sdim titleName, 512 : titleName = "''"
+	sdim dataName, 4000
+	sdim bodyTag, 10000 : bodyTag = "''"
+	sdim style, 10000
+	
+	idx = instr(fd, 0, ";$a>")
+	if (idx < 0) : return
+	getstr ts, fd, idx + 4
+	axName = strtrim(ts, 0, ' ')
+	
+	idx = instr(fd, 0, ";$data")
+	if (idx < 0) : return
+	getstr ts, fd, idx + 6
+	idx += strsize + 6
+	envData = strtrim(ts, 0, ' ')
+	
+	idxEnd = instr(fd, idx, ";$end")
+	if (idxEnd < 0) : return
+	idxEnd += idx
+	
+	repeat
+		if (idx >= idxEnd) : break
+		getstr ts, fd, idx
+		idx += strsize
+		i = instr(ts, 0, "TITLE_NAME")
+		if (i >= 0) {
+			i += instr(ts, i, "\"") + 1
+			getstr ts, ts, i, '\"'
+			titleName = "'" + cnvatos(ts) + "'"
+			continue
+		}
+		i = instr(ts, 0, "DATA_")
+		if (i >= 0) {
+			i += instr(ts, i, "\"") + 1
+			getstr ts, ts, i, '\"'
+			dataName += "'" + ts + "',"
+			continue
+		}
+		i = instr(ts, 0, ";$body ")
+		if (i >= 0) {
+			getstr ts, ts, i + 7
+			bodyTag = "'" + cnvatos(ts) + "'"
+			continue
+		}
+		i = instr(ts, 0, ";$style ")
+		if (i >= 0) {
+			getstr ts, ts, i + 8
+			style = cnvatos(ts)
+			continue
+		}
+	loop
+	dataName = "'ax/" + axName + "'," + strtrim(dataName, 0, ',')
+	
+	noteload "temp.html"
+	strrep fd, "$$titleName$$", titleName
+	strrep fd, "$$envData$$", envData
+	strrep fd, "$$dataName$$", dataName
+	strrep fd, "$$bodyTag$$", bodyTag
+	strrep fd, "$$style$$", style
+	fn = "../docs/x_" + getpath(axName, 1) + ".html"
+	notesave fn
+	noteunsel
+	buf += "saved as " + fn + "\n"
+
+	return

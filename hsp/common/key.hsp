@@ -1,0 +1,51 @@
+
+#module
+
+#const global KEY_LEFT     37
+#const global KEY_UP       38
+#const global KEY_RIGHT    39
+#const global KEY_DOWN     40
+#const global KEY_SPACE    32
+#const global KEY_ENTER    13
+#const global KEY_SHIFT    16
+#const global KEY_CTRL     17
+#const global KEY_ESC      27
+#const global KEY_LBUTTON  1
+#const global KEY_RBUTTON  2
+
+#deffunc initKey
+
+	dim curKeyStat, 256
+		; 現在のキー状態
+		; %00(0) = 離している
+		; %01(1) = 押している
+		; %10(2) = 離した瞬間
+		; %11(3) = 押した瞬間
+	dim preKeyStat, 256
+		; 前回のキー状態 0 or 1
+	return
+
+#deffunc updateKey
+
+	repeat 256
+		getkey curKeyStat(cnt), cnt
+		if (curKeyStat(cnt)) {
+			if (preKeyStat(cnt)) : else : curKeyStat(cnt) += 2
+			preKeyStat(cnt) = 1
+		} else {
+			if (preKeyStat(cnt)) : curKeyStat(cnt) += 2
+			preKeyStat(cnt) = 0
+		}
+	loop
+	return
+
+#defcfunc keyPress int _k
+	return curKeyStat(_k) & 1
+
+#defcfunc keyDown int _k
+	return curKeyStat(_k) == 3
+
+#defcfunc keyUp int _k
+	return curKeyStat(_k) == 2
+
+#global

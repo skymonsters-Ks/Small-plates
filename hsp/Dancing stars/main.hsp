@@ -1,15 +1,16 @@
-;$a>ax_dstars.ax
+;$a>dstars.ax
 
-; #define WIN_RUN
+;$data wx:480,wy:480,mem:16
+#define TITLE_NAME         "Dancing stars"
+#define DATA_FONT          "font/reqt8x8"
+#define DATA_FONTIMG       "font/reqt8x8.png"
+#define DATA_STAR          "image/star.png"
+;$end
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 #include "../common/imgfont.hsp"
 
-#ifdef WIN_RUN
-#define global DATA_DIR "../../docs/data/"
-#else
-#define global DATA_DIR ""
-#endif
 
 #const PI_D2 M_PI / 2
 
@@ -121,12 +122,11 @@
 
 *start
 	
-	f = DATA_DIR + "f_reqt8x8"
 	initImgFont
-	loadImgFont f, f + ".png"
+	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
 	setImgFontAttr 2, 2, 3
 
-	celload DATA_DIR + "img_star.png"
+	celload cnvName(DATA_STAR)
 	img_star = stat
 	celdiv stat, , , 16, 16
 	

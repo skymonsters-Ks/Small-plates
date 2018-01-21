@@ -79,11 +79,19 @@ Module.preRun.push(function() {
 		
 		var loadedDataNum = 0;
 		var dataNum = global_data_file.length;
+		var dirList = [];
 		
-		function loadData(id) {
-			var name = global_data_file[id];
+		function loadData(name) {
+			var idx = name.indexOf('/');
+			if (idx >= 0) {
+				var dir = name.slice(0, idx);
+				if (dirList.indexOf(dir) < 0) {
+					dirList.push(dir);
+					FS.mkdir(dir);
+				}
+			}
 			var xhr = new XMLHttpRequest();
-			Module.addRunDependency('data_' + name);
+			Module.addRunDependency(name);
 			xhr.open('GET', 'data/' + name, true);
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('application/octet-stream');
@@ -102,12 +110,12 @@ Module.preRun.push(function() {
 					console.error('Failed to load ' + name);
 				}
 				loadedDataNum++;
-				Module.removeRunDependency('data_' + name);
+				Module.removeRunDependency(name);
 			};
 			xhr.send();
 		}
 		
-		for (var i = 0; i < dataNum; i++) loadData(i);
+		for (var i = 0; i < dataNum; i++) loadData(global_data_file[i]);
 
 	}
 	

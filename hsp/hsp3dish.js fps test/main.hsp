@@ -1,20 +1,16 @@
-;$a>ax_fpstest.ax
+;$a>fpstest.ax
 
-; HSP 3.5b5
-
-#packopt xsize 480
-#packopt ysize 480
-
-; #define WIN_RUN
+;$data wx:480,wy:480,mem:16
+#define TITLE_NAME         "hsp3dish.js fps test"
+#define DATA_FONT          "font/recp8x8"
+#define DATA_FONTIMG       "font/recp8x8.png"
+#define DATA_STAR          "image/star.png"
+;$end
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 #include "../common/imgfont.hsp"
 
-#ifdef WIN_RUN
-#define global DATA_DIR "../../docs/data/"
-#else
-#define global DATA_DIR ""
-#endif
 
 #module dish_util
 
@@ -37,14 +33,15 @@
 
 *start
 
+	title TITLE_NAME
+	
 	dim pt@dish_util, 16
 
-	celload DATA_DIR + "img_star.png", 1
+	celload cnvName(DATA_STAR), 1
 	celdiv 1, 32, 32, 16, 16
 
-	f = DATA_DIR + "f_recp8x8"
 	initImgFont
-	loadImgFont f, f + ".png"
+	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
 
 	gsel 0
 

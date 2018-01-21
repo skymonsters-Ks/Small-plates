@@ -1,11 +1,17 @@
-;$a>ax_gamtest.ax
+;$a>gamtest.ax
+
+;$data wx:480,wy:800,mem:16
+#define TITLE_NAME         "Gyro-Accel-MultiTouch Test"
+#define DATA_FONT          "font/recp8x8"
+#define DATA_FONTIMG       "font/recp8x8.png"
+;$end
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 #include "../common/imgfont.hsp"
 
-	f = "f_recp8x8"
 	initImgFont
-	loadImgFont f, f + ".png"
+	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
 	setImgFontAttr 2, 2, 3
 	
 	setcls 1, $5588cc
@@ -88,7 +94,7 @@
 	
 	redraw 1
 	
-	await 1
+	await 15
 	
 	goto *mainLoop
 	

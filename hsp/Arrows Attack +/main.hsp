@@ -1,21 +1,21 @@
-;$a>ax_aaa.ax
+;$a>aaa.ax
 
-; HSP 3.5b5
+; HSP 3.5
 
-#packopt xsize 640
-#packopt ysize 480
-#packopt name "aaa"
-
-; #define WIN_RUN
+;$data wx:640,wy:480,mem:16
+#define global TITLE_NAME      "Arrows Attack +"
+#define global DATA_SE_ARROW1  "se/za.wav"
+#define global DATA_SE_ARROW2  "se/cti.wav"
+#define global DATA_SE_ARROW3  "se/pyun.wav"
+#define global DATA_SE_ARROW4  "se/gu.wav"
+#define global DATA_SE_CLEAR   "se/pylll.wav"
+#define global DATA_SE_MISS    "se/pililili.wav"
+#define global DATA_FONT       "font/sfaaa"
+;$end
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 #include "../common/segfont.hsp"
-
-#ifdef WIN_RUN
-#define global DATA_DIR "../../docs/data/"
-#else
-#define global DATA_DIR ""
-#endif
 
 #const global TIME_LIMIT 30000
 #const global TIME_READY 1000
@@ -46,7 +46,7 @@
 
 #deffunc loadSe str _s, int _id
 
-	f = DATA_DIR + "se_" + _s + ".wav"
+	f = cnvName(_s)
 	exist f
 	if (strsize >= 0) {
 		mmload f, _id
@@ -72,19 +72,19 @@
 
 *start
 
-	title "ARROWS ATTACK +"
+	title TITLE_NAME
 
 	initSe
-	loadSe "za", SE_ARROW + 0
-	loadSe "cti", SE_ARROW + 1
-	loadSe "pyun", SE_ARROW + 2
-	loadSe "gu", SE_ARROW + 3
-	loadSe "pylll", SE_CLEAR
-	loadSe "pililili", SE_MISS
+	loadSe DATA_SE_ARROW1, SE_ARROW + 0
+	loadSe DATA_SE_ARROW2, SE_ARROW + 1
+	loadSe DATA_SE_ARROW3, SE_ARROW + 2
+	loadSe DATA_SE_ARROW4, SE_ARROW + 3
+	loadSe DATA_SE_CLEAR, SE_CLEAR
+	loadSe DATA_SE_MISS, SE_MISS
 	vol = 2
 	setVolAll vol
 
-	loadSegFont DATA_DIR + "fs_aaa"
+	loadSegFont cnvName(DATA_FONT)
 	initArrow
 	getreq time, SYSREQ_TIMER
 	changeScene SC_TITLE

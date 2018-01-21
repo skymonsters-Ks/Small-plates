@@ -1,8 +1,16 @@
-;$a>ax_slot2017.ax
+;$a>slot2017.ax
+
+;$data wx:320,wy:240,rate:2,mem:32
+#define TITLE_NAME   "TAスロット「A HAPPY NEW YEAR 2017」"
+#define DATA_IMG     "image/reel.png"
+;$end
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 
-	celload "img_reel.png", 1
+	title TITLE_NAME
+	
+	celload cnvName(DATA_IMG), 1
 	celdiv 1, 12, 12
 	spaceid = 1, 7, 11, 16, 21
 	rectx = 10, 155, 155, 10

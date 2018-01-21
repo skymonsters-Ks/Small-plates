@@ -1,22 +1,17 @@
-;$a>ax_stgjs.ax
+;$a>stgjs.ax
 
-; HSP 3.5b5
+;$data wx:480,wy:480,mem:16
+#define TITLE_NAME         "Star: The Gathering JS"
+#define DATA_FONT          "font/recp8x8"
+#define DATA_FONTIMG       "font/recp8x8.png"
+#define DATA_STAR          "image/star.png"
+;$end
 
-#packopt xsize 640
-#packopt ysize 480
-
-; #define WIN_RUN
-
-#define CAPTION "Star: The Gathering JS"
 
 #include "hsp3dish.as"
+#include "../common/platform.hsp"
 #include "../common/imgfont.hsp"
 
-#ifdef WIN_RUN
-#define global DATA_DIR "../../docs/data/"
-#else
-#define global DATA_DIR ""
-#endif
 
 #module
 
@@ -51,16 +46,13 @@
 
 	dim pt@dish_util, 16
 
-	title CAPTION
+	title TITLE_NAME
 
-	celload DATA_DIR + "img_star.png", 1
+	celload cnvName(DATA_STAR), 1
 	celdiv 1, 32, 32, 16, 16
 	
-	celload DATA_DIR + "img_pixel.png", 2
-
-	f = DATA_DIR + "f_recp8x8"
-	initImgFont 
-	loadImgFont f, f + ".png"
+	initImgFont
+	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
 
 	gsel 0
 	starNum = 100
@@ -232,7 +224,7 @@
 		abox 0, 160, 480, 160
 		gmode 5, , , 255
 		setImgFontAttr 3, 3, 4
-		drawImgStrC CAPTION, 240, 190
+		drawImgStrC TITLE_NAME, 240, 190
 		if (elptime > 1000) {
 			y = limit(sin(0.00095 * elptime) * 10 * (elptime > 28000) + 270 ,0, 270)
 			setImgFontAttr 2, 2, 3
@@ -245,8 +237,8 @@
 
 
 #deffunc abox int _x, int _y, int _sx, int _sy
-	pos _x, _y
-	celput 2, , _sx, _sy
+	color
+	grect _x + _sx / 2, _y + _sy / 2, 0, _sx, _sy
 	return
 
 #deffunc genStar int _id

@@ -1,0 +1,58 @@
+
+#module
+
+#deffunc initFrame int _baseFps
+
+	if (_baseFps > 0) {
+		msecPerFrame = 1000.0 / _baseFps
+	} else {
+		msecPerFrame = 1000.0 / 60
+	}
+	resetFrame
+	dim dtime, 2
+	return
+
+#deffunc resetFrame
+
+	count = 0
+	getreq stime, SYSREQ_TIMER
+	return
+	
+#deffunc runFrame label _rtUpdate, label _rtDraw, int _uc
+
+	uc = 0
+	getreq time, SYSREQ_TIMER
+	dt = (time - stime) - msecPerFrame * count
+	if (dt >= 0) {
+		uc++
+		count++
+		dc = dt / msecPerFrame
+		if (dc > 0) {
+			if (dc > _uc) {
+				stime += dt
+			} else {
+				count += dc
+				uc += dc
+			}
+		}
+		getreq t1, SYSREQ_TIMER
+		repeat uc
+			gosub _rtUpdate
+		loop
+		getreq t2, SYSREQ_TIMER
+		redraw 0
+		gosub _rtDraw
+		redraw 1
+		getreq t3, SYSREQ_TIMER
+		dtime = t2 - t1, t3 - t2
+	}
+	await 1
+	return
+
+#defcfunc getUpdateDt
+	return dtime
+	
+#defcfunc getDrawDt
+	return dtime(1)
+
+#global

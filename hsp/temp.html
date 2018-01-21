@@ -2,18 +2,21 @@
 <html lang="en-us">
 
 	<head>
+		<meta charset="utf-8">
+		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 		<script type='text/javascript'>
-			var global_data_title = '';
-			var global_data_file = ['.ax'];
-			var global_data_env = {wx:640,wy:480};
+			var global_data_title = $$titleName$$;
+			var global_data_file = [$$dataName$$];
+			var global_data_env = {$$envData$$};
 		</script>
 		<script type="text/javascript" src="js/init.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/style.css" />
+		<style>$$style$$</style>
 	</head>
 	
 	<body id="body">
 	
-		<script type="text/javascript">setupBody('');</script>
+		<script type="text/javascript">setupBody($$bodyTag$$);</script>
 		<script type="text/javascript" src="js/load.js"></script>
 		<script type="text/javascript" src="js/hsp3dish.js" async></script>
 		

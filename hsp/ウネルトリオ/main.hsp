@@ -1,7 +1,13 @@
-;$a>ax_unel.ax
+;$a>unel.ax
+
+;$data wx:640,wy:480,mem:16
+#define TITLE_NAME   "ウネルトリオ"
+;$end
 
 #include "hsp3dish.as"
 
+	title TITLE_NAME
+	
 	pn = 120
 	ddim x, 3, pn
 	ddim y, 3, pn
