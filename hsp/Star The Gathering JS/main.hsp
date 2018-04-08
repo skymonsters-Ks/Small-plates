@@ -57,7 +57,6 @@
 	gsel 0
 	starNum = 100
 	dim starTime, starNum
-	dim starTyte, starNum
 	ddim starPosX, starNum
 	ddim starPosY, starNum
 	ddim starPreV, starNum
@@ -243,7 +242,7 @@
 
 #deffunc genStar int _id
 	starTime(_id) = nowTime
-	starPosX(_id) = double(rnd(480)) + 80
+	starPosX(_id) = double(rnd(480))
 	starPosY(_id) = double(rnd(480))
 	starVelX(_id) = (double(rnd(50)) / 50) * (rnd(2) * 2 - 1)
 	starVelY(_id) = (double(rnd(50)) / 50) * (rnd(2) * 2 - 1)
