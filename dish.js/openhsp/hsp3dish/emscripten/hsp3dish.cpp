@@ -84,6 +84,7 @@ static std::string gplog;
 extern "C" {
 	static void logfunc( gameplay::Logger::Level level, const char *msg )
 	{
+		if (( level == gameplay::Logger::LEVEL_ERROR )||( level == gameplay::Logger::LEVEL_WARN )) printf( "#%s\n",msg );
 		gplog += msg;
 	}
 }
@@ -797,13 +798,17 @@ void hsp3dish_exec_one( void )
 	switch( ctx->runmode ) {
 	case RUNMODE_WAIT:
 		tick = hgio_gettick();
-		ctx->runmode = code_exec_wait( tick );
+		if ( code_exec_wait( tick ) != RUNMODE_RUN ) {
+			return;
+		}
+		break;
 	case RUNMODE_AWAIT:
 		tick = hgio_gettick();
 		if ( code_exec_await( tick ) != RUNMODE_RUN ) {
 			//printf("AWAIT %d < %d\n", tick, ctx->waittick);
 			return;
 		}
+		break;
 	}
 	//		é¿çsÇÃäJén
 	//

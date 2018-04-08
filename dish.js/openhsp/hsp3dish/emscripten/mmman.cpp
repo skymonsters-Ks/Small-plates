@@ -37,10 +37,8 @@ typedef struct MMM
 	char	*fname;			//	sound filename (sbstr)
 	// int		vol;
 	// int		pan;
-#ifdef HSPEMSCRIPTEN
-	double	start;
-	double	end;
-#endif
+	double		start;
+	double		end;
 	
 	Mix_Chunk	*chunk;
 	int		channel;
@@ -122,7 +120,7 @@ int MMMan::SearchBank( int num )
 }
 
 
-MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
+MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, double start, double end )
 {
 	int bank;
 	MMM *m;
@@ -145,20 +143,10 @@ MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname )
 	// m->pause_flag = 0;
 	// m->vol = 0;
 	// m->pan = 0;
+	m->start = start;
+	m->end = end;
 	return m;
 }
-
-#ifdef HSPEMSCRIPTEN
-MMM *MMMan::SetBank( int num, int flag, int opt, void *mempt, char *fname, double start, double end )
-{
-	MMM *m = SetBank( num, flag, opt, mempt, fname );
-	if ( m != NULL ) {
-		m->start = start;
-		m->end = end;
-	}
-	return m;
-}
-#endif
 
 
 void MMMan::ClearAllBank( void )
@@ -240,27 +228,13 @@ int MMMan::BankLoad( MMM *mmm, char *fname )
 }
 
 
-int MMMan::Load( char *fname, int num, int opt )
-{
-	if ( num < 0 || num >= MIX_MAX_CHANNEL ) return -1;
-	MMM *mmm = SetBank( num, MMDATA_INTWAVE, opt, NULL, fname );
-	return BankLoad( mmm, fname );
-}
-
-#ifdef HSPEMSCRIPTEN
 int MMMan::Load( char *fname, int num, int opt, double start, double end )
 {
 	if ( num < 0 || num >= MIX_MAX_CHANNEL ) return -1;
 	MMM *mmm = SetBank( num, MMDATA_INTWAVE, opt, NULL, fname, start, end );
 	return BankLoad( mmm, fname );
 }
-#endif
 
-
-int MMMan::Play( int num )
-{
-	return Play( num, -1 );
-}
 
 int MMMan::Play( int num, int ch )
 {
@@ -276,11 +250,7 @@ int MMMan::Play( int num, int ch )
 		if ( ch >= 0 && ch < MIX_MAX_CHANNEL ) {
 			bool loop = m->opt & 1;
 			Mix_HaltChannel( ch );
-#ifdef HSPEMSCRIPTEN
 			Mix_PlayChannel( ch, m->chunk, loop ? -1 : 0 , m->start, m->end );
-#else
-			Mix_PlayChannel( ch, m->chunk, loop ? -1 : 0 );
-#endif
 		}
 	}
 	return 0;

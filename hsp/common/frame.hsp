@@ -1,53 +1,58 @@
-
 #module
 
-#deffunc initFrame int _baseFps
+#define global setFrameTime(%1=16.666666) setFrameTime_ %1
 
-	if (_baseFps > 0) {
-		msecPerFrame = 1000.0 / _baseFps
-	} else {
-		msecPerFrame = 1000.0 / 60
-	}
-	resetFrame
+#deffunc initFrame
+
 	dim dtime, 2
+	setFrameTime
+	resetFrame
 	return
 
 #deffunc resetFrame
 
-	count = 0
+	ucTotal = 0
 	getreq stime, SYSREQ_TIMER
 	return
 	
-#deffunc runFrame label _rtUpdate, label _rtDraw, int _uc
+#deffunc setFrameTime_ double _ms
+
+	if (_ms > 0) : msecPerFrame = _ms
+	return
+	
+#deffunc setFrameRoutin label _rtUpdate, label _rtDraw, int _mc
+
+	rtUpdate = _rtUpdate
+	rtDraw = _rtDraw
+	ucMax = _mc
+	return
+	
+#deffunc runFrame
 
 	uc = 0
 	getreq time, SYSREQ_TIMER
-	dt = (time - stime) - msecPerFrame * count
+	dt = (time - stime) - msecPerFrame * ucTotal
 	if (dt >= 0) {
 		uc++
-		count++
-		dc = dt / msecPerFrame
+		ucTotal++
+		dc = limit(dt / msecPerFrame, 0, ucMax)
 		if (dc > 0) {
-			if (dc > _uc) {
-				stime += dt
-			} else {
-				count += dc
-				uc += dc
-			}
+			ucTotal += dc
+			uc += dc
 		}
 		getreq t1, SYSREQ_TIMER
 		repeat uc
-			gosub _rtUpdate
+			gosub rtUpdate
 		loop
 		getreq t2, SYSREQ_TIMER
 		redraw 0
-		gosub _rtDraw
+		gosub rtDraw
 		redraw 1
 		getreq t3, SYSREQ_TIMER
 		dtime = t2 - t1, t3 - t2
 	}
 	await 1
-	return
+	return dt
 
 #defcfunc getUpdateDt
 	return dtime

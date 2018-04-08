@@ -62,7 +62,6 @@ void hgio_reset( void );
 void hgio_setClear( int rval, int gval ,int bval );
 void hgio_setFilterMode( int mode );
 void hgio_setTexBlendMode( int mode, int aval );
-// void hgio_setBlendModeFlat( int mode );
 void hgio_putTexFont( int x, int y, char *msg, int color );
 
 //色の指定
