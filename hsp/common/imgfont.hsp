@@ -104,7 +104,7 @@
 	w = 0
 	repeat strlen(m)
 		idx = peek(asciiMap, peek(m, cnt))
-		w += rateX * (-_ofsx(cnt) + shiftx(fimg, idx) - posx(fimg, idx)) + lspace
+		w += rateX * (_ofsx(cnt) + shiftx(fimg, idx) - posx(fimg, idx)) + lspace
 	loop
 	return w - lspace
 
