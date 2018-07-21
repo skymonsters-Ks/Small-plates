@@ -26,10 +26,15 @@
 	repeat num
 		sdim ts, 512
 		dragQueryFile hDrop, cnt, varptr(ts), 512
-		fn = cnvatos(ts)
-		dirlist x, fn, 5
+		dir = cnvatos(ts)
+		dirlist x, dir, 5
 		if (stat) {
+			sdim fd
+			notesel fd
 			gosub *genHtml
+			noteunsel
+		} else {
+			buf += dir + " not exist\n"
 		}
 	loop
 	dragFinish hDrop
@@ -37,12 +42,6 @@
 	return
 
 *genHtml
-	fn += "\\main.hsp"
-	exist fn
-	if (strsize <= 0) : return
-	sdim fd
-	notesel fd
-	noteload fn
 	sdim axName
 	sdim envData
 	sdim titleName, 512 : titleName = "''"
@@ -50,19 +49,36 @@
 	sdim bodyTag, 10000 : bodyTag = "''"
 	sdim style, 10000
 	
-	idx = instr(fd, 0, ";$a>")
-	if (idx < 0) : return
-	getstr ts, fd, idx + 4
-	axName = strtrim(ts, 0, ' ')
+	fn = dir + "\\.cmpexdef"
+	exist fn
+	if (strsize > 0) {
+		noteload fn
+		idx = instr(fd, 0, ";$a>")
+		if (idx < 0) : buf += dir + " ;$a> not exist\n" : return
+		getstr ts, fd, idx + 4
+		axName = strtrim(ts, 0, ' ')
+	}
+	
+	fn = dir + "\\main.hsp"
+	exist fn
+	if (strsize <= 0) : buf += fn + " not exist\n" : return
+	noteload fn
+	
+	if (axName == "") {
+		idx = instr(fd, 0, ";$a>")
+		if (idx < 0) : buf += dir + " ;$a> not exist\n" : return
+		getstr ts, fd, idx + 4
+		axName = strtrim(ts, 0, ' ')
+	}
 	
 	idx = instr(fd, 0, ";$data")
-	if (idx < 0) : return
+	if (idx < 0) : buf += dir + " ;$data not exist\n" : return
 	getstr ts, fd, idx + 6
 	idx += strsize + 6
 	envData = strtrim(ts, 0, ' ')
 	
 	idxEnd = instr(fd, idx, ";$end")
-	if (idxEnd < 0) : return
+	if (idxEnd < 0) : buf += dir + " ;$end not exist\n" : return
 	idxEnd += idx
 	
 	repeat
@@ -107,7 +123,6 @@
 	strrep fd, "$$style$$", style
 	fn = "../docs/x_" + getpath(axName, 1) + ".html"
 	notesave fn
-	noteunsel
 	buf += "saved as " + fn + "\n"
 
 	return
