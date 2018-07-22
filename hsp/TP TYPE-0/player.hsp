@@ -6,7 +6,7 @@
 	posy = 240.0
 	tcnt = 0
 	fieldradius = 0.0
-	fieldacc = 0.0
+	fieldacc = 30.0
 	cannext = 0
 	nextx = posx
 	nexty = posy
@@ -43,7 +43,7 @@
 		}
 	}
 	multiplier = limitf(multiplier + multidv, 1)
-	multidv -= 0.0008
+	multidv -= 0.001
 	tcnt++
 	return
 
@@ -54,7 +54,7 @@
 	cannext = 0
 	fieldradius = 0.0
 	fieldacc -= 30
-	mmplay SND_JUMP
+	playSound SND_JUMP
 	return
 
 #defcfunc checkHitPlayer double _x, double _y, double _s
@@ -62,8 +62,8 @@
 	if (scene@ == SC_MAIN) : if (dist(_x, _y, posx, posy) < _s) {
 		genExplosion posx, posy
 		chgScene SC_OVER
-		mmplay SND_DEAD
-		mmstop SND_BGM
+		playSound SND_DEAD
+		stopSound SND_BGM
 		return 1
 	}
 	return 0
@@ -84,7 +84,7 @@
 
 #deffunc drawMoveArea
 
-	gmode 5, , , 50
+	gmode 5, , , 40
 	gmulcolor
 	s = fieldradius / 31
 	pos posx, posy
@@ -103,14 +103,24 @@
 		color 20, 20, 20
 		boxf nextx - 3, nexty - 3, nextx + 4, nexty + 4
 	}
-	color 255, 255, 255
-	grect posx, posy, -0.04 * tcnt, 20, 20
+	color , 100, 255
+	grect posx, posy, -0.04 * tcnt, 22, 22
 	repeat 4
 		t = 0.04 * tcnt + M_PI * cnt / 2
 		x = cos(t) * 8 + posx
 		y = sin(t) * 8 + posy
-		grect x, y, -0.07 * tcnt + t, 8, 16
+		grect x, y, -0.07 * tcnt + t, 10, 18
 	loop
+	color 255, 255, 255
+	grect posx, posy, -0.04 * tcnt, 18, 18
+	repeat 4
+		t = 0.04 * tcnt + M_PI * cnt / 2
+		x = cos(t) * 8 + posx
+		y = sin(t) * 8 + posy
+		grect x, y, -0.07 * tcnt + t, 6, 14
+	loop
+	color , 100, 255
+	grect posx, posy, 0.03 * tcnt, 5, 5
 	return
 
 #deffunc addScore int _s

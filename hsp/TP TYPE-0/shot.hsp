@@ -23,7 +23,7 @@
 		velx(cnt) = cos(_a) * 10
 		vely(cnt) = sin(_a) * 10
 		angl(cnt) = _a
-		mmplay SND_SHOT
+		playSound SND_SHOT
 		break
 	loop
 	return
@@ -49,7 +49,7 @@
 
 #deffunc drawShot
 
-	gmulcolor
+	gmulcolor 200, 200, 255
 	repeat num
 		if (life(cnt)) {
 			pos posx(cnt), posy(cnt)

@@ -34,11 +34,13 @@
 #include "util.hsp"
 #include "shot.hsp"
 #include "enemy.hsp"
+#include "sound.hsp"
 #include "stage.hsp"
 #include "bullet.hsp"
 #include "player.hsp"
 #include "particle.hsp"
 #include "explosion.hsp"
+#include "background.hsp"
 
 *start
 
@@ -55,13 +57,14 @@
 	
 	gsel 0
 	
-	mmload DATA_BGM, SND_BGM, 1
-	mmload DATA_SE_SHOT, SND_SHOT
-	mmload DATA_SE_JUMP, SND_JUMP
-	mmload DATA_SE_READY, SND_READY
-	mmload DATA_SE_FIRE, SND_FIRE
-	mmload DATA_SE_EXPLOSION, SND_EXPLOSION
-	mmload DATA_SE_DEAD, SND_DEAD
+	initSound
+	loadSound DATA_BGM, SND_BGM, 1
+	loadSound DATA_SE_SHOT, SND_SHOT
+	loadSound DATA_SE_JUMP, SND_JUMP
+	loadSound DATA_SE_READY, SND_READY
+	loadSound DATA_SE_FIRE, SND_FIRE
+	loadSound DATA_SE_EXPLOSION, SND_EXPLOSION
+	loadSound DATA_SE_DEAD, SND_DEAD
 	
 	initFrame
 	setFrameTime 16.666
@@ -69,16 +72,17 @@
 	
 	chgScene SC_TITLE
 	
+	initBg
 	initPlayer
 	
 	goto *mainLoop
 	
 *init
-	initPlayer
 	initShot
 	initEnemy
 	initStage
 	initBullet
+	initPlayer
 	initParticle
 	initExplosion
 	return
@@ -96,13 +100,15 @@
 
 *update
 	updateKey
+	updateSound
+	updateBg
 	
 	switch scene
 	case SC_TITLE
 		movePlayer
 		if (keyDown(KEY_LBUTTON)) {
 			chgScene SC_MAIN
-			mmplay SND_BGM
+			playSound SND_BGM
 		}
 		swbreak
 	case SC_MAIN
@@ -117,7 +123,7 @@
 	case SC_OVER
 		if (keyDown(KEY_LBUTTON)) : if (scframe > 60) {
 			chgScene SC_MAIN
-			mmplay SND_BGM
+			playSound SND_BGM
 		}
 		moveParticle
 		moveExplosion
@@ -136,11 +142,13 @@
 	
 	switch scene
 	case SC_TITLE
+		drawBg
 		drawPlayer
 		drawTitle
 		swbreak
 	case SC_MAIN
 		drawExplosion
+		drawBg
 		drawMoveArea
 		drawParticle
 		drawPlayer
@@ -152,6 +160,7 @@
 		swbreak
 	case SC_OVER
 		drawExplosion
+		drawBg
 		drawParticle
 		drawEnemy
 		drawShot

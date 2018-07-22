@@ -4,7 +4,7 @@
 
 #deffunc initEnemy
 
-	num = 10
+	num = 12
 	dim life, num
 	dim tcnt, num
 	ddim posx, num
@@ -24,9 +24,6 @@
 		posx(cnt) = _x
 		posy(cnt) = _y
 		bcnt(cnt) = 0
-		bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt))
-		bspd(cnt) = getRank() + 3
-		mmplay SND_READY
 		break
 	loop
 	return
@@ -37,17 +34,20 @@
 	rank = getRank()
 	repeat num
 		if (life(cnt)) {
-			if ((tcnt(cnt) \ limit(80 - rank * 2)) == 0) {
-				bcnt(cnt) = APR_CNT
-				bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt))
-				bspd(cnt) = rank + 5
-				if (scene@ == SC_MAIN) : mmplay SND_READY
-			}
 			if (bcnt(cnt)) {
 				bcnt(cnt)--
-				if (bcnt(cnt) == 0) {
+			} else {
+				if (tcnt(cnt)) {
 					genBullet posx(cnt), posy(cnt), bang(cnt), bspd(cnt)
+					bcnt(cnt) = APR_CNT + limit(60 - rank * 7, 1, 60)
+				} else {
+					bcnt(cnt) = APR_CNT
 				}
+				bspd(cnt) = limitf(rank + 5, 0, 10)
+			}
+			if (bcnt(cnt) == APR_CNT) {
+				bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt)) + limitf(0.0002 * (rnd(201) - 100) * rank, -1.4, 1.4)
+				if (scene@ == SC_MAIN) : playSound SND_READY
 			}
 			tcnt(cnt)++
 			existnum++
@@ -59,15 +59,19 @@
 
 	return existnum
 
+#defcfunc getEnemyMax
+
+	return num
+
 #defcfunc searchTargetEnemy var _resx, var _resy, double _x, double _y, double _r
 
-	sr = 9999
+	nr = 9999
 	id = -1
 	repeat num
 		if (life(cnt)) : if (tcnt(cnt) > APR_CNT) {
 			r = dist(posx(cnt), posy(cnt), _x, _y)
-			if (r < _r) : if (r < sr) {
-				sr = r
+			if (r < _r) : if (r < nr) {
+				nr = r
 				id = cnt
 			}
 		}
@@ -79,6 +83,19 @@
 	}
 	return 0
 
+#defcfunc distNearestEnemy double _x, double _y
+
+	nr = 9999
+	repeat num
+		if (life(cnt)) {
+			r = dist(posx(cnt), posy(cnt), _x, _y)
+			if (r < nr) {
+				nr = r
+			}
+		}
+	loop
+	return nr
+
 #defcfunc checkHitEnemy double _x, double _y, double _s
 
 	res = 0
@@ -87,7 +104,7 @@
 			if (dist(_x, _y, posx(cnt), posy(cnt)) < _s) {
 				life(cnt) = 0
 				genExplosion posx(cnt), posy(cnt)
-				if (scene@ == SC_MAIN) : mmplay SND_EXPLOSION
+				if (scene@ == SC_MAIN) : playSound SND_EXPLOSION
 				addScore 100
 				addMultiplier 1
 				res = 1
@@ -102,27 +119,26 @@
 	repeat num
 		if (life(cnt)) {
 			if (tcnt(cnt) > APR_CNT) {
+				color 255, , 160
+				grect posx(cnt), posy(cnt), -0.04 * tcnt(cnt), 16, 16
+				grect posx(cnt), posy(cnt), 0.05 * tcnt(cnt), 16, 16
 				color 255, 255, 255
-				grect posx(cnt), posy(cnt), -0.04 * tcnt(cnt), 15, 15
-				grect posx(cnt), posy(cnt), 0.05 * tcnt(cnt), 15, 15
+				grect posx(cnt), posy(cnt), -0.04 * tcnt(cnt), 11, 11
+				grect posx(cnt), posy(cnt), 0.05 * tcnt(cnt), 11, 11
 			}
-			if (bcnt(cnt)) {
-				drawFireGuide cnt, bcnt(cnt)
+			if (bcnt(cnt) <= APR_CNT) {
+				x = posx(cnt)
+				y = posy(cnt)
+				co = cos(bang(cnt))
+				si = sin(bang(cnt))
+				s = bcnt(cnt)
+				len = bspd(cnt) * s * 1.2 + 5
+				color 255
+				circler x, y, s
+				line co * len + x, si * len + y, co * s + x, si * s + y
 			}
 		}
 	loop
-	return
-	
-#deffunc drawFireGuide int _id, int _s
-
-	x = posx(_id)
-	y = posy(_id)
-	co = cos(bang(_id))
-	si = sin(bang(_id))
-	len = bspd(_id) * _s + 5
-	color 255
-	circler x, y, _s
-	line co * len + x, si * len + y, co * _s + x, si * _s + y
 	return
 
 #global

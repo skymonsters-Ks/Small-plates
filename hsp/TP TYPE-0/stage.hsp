@@ -2,38 +2,28 @@
 
 #deffunc initStage
 
-	rank = 1.0
-	tcnt = 0
+	randomize
 	time = 0.0
+	rank = 1.0
+	apcnt = 50
 	return
 	
 #deffunc runStage
 
-	tcnt++
-	time += 16.666
+	time += 16.666666
 	rank += 0.001
-	en = getEnemyNum()
-	d = 4 + rank * 0.8
-	if (en >= d) : return
-	if (tcnt == 50) {
-		ptnCircle
-		return
-	}
-	apf = tcnt \ limit(80.0 - rank * 3.0, 10)
-	if (apf == 0) {
-		if (en == 0) {
-			ptnCircle
-			return
+	emax = limit(4 + rank * 0.8, 4, getEnemyMax())
+	apcnt--
+	if (apcnt == 0) {
+		apcnt = limit(90.0 - rank * 4.0, 10, 80)
+		en = getEnemyNum()
+		if (en >= emax) : return
+		cl = limit(emax - 9, 0, 4)
+		if (en <= cl) {
+			ptnCircle emax - cl
+		} else {
+			ptnSingle
 		}
-		repeat
-			x = rnd(400) + 40
-			y = rnd(400) + 40
-			if (distPlayer(x, y) > 30) {
-				genEnemy x, y
-				break
-			}
-		loop
-		return
 	}
 	return
 
@@ -41,11 +31,25 @@
 
 	return rank
 
-#deffunc ptnCircle@stage
+#deffunc ptnSingle@stage
+
+	repeat
+		a = 0.01 * rnd(628)
+		r = rnd(200)
+		x = cos(a) * r + 240
+		y = sin(a) * r + 240
+		if (distPlayer(x, y) > 50) : if (distNearestEnemy(x, y) > 40) {
+			genEnemy x, y
+			break
+		}
+	loop
+	return
+
+#deffunc ptnCircle@stage int _d
 
 	a = 0.01 * rnd(628)
-	pd = M_PI * 2 / d
-	repeat d
+	pd = M_PI * 2 / _d
+	repeat _d
 		t = pd * cnt + a
 		x = cos(t) * 200 + 240
 		y = sin(t) * 200 + 240
@@ -60,9 +64,9 @@
 	gmulcolor
 	setImgFontAttr 2, 2, 3
 	if (time >= 60000) {
-		drawImgStrR strf("%d:%04.1f", time / 60000, (time / 1000) \ 60), 470, 454
+		drawImgStrR strf("%d:%02d.%d", time / 60000, (time / 1000) \ 60, time \ 1000 / 100), 470, 454
 	} else {
-		drawImgStrR strf("%3.1f", (time / 1000) \ 60), 470, 454
+		drawImgStrR strf("%d.%d", (time / 1000) \ 60, time \ 1000 / 100), 470, 454
 	}
 	return
 

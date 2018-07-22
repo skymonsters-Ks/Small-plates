@@ -23,7 +23,7 @@
 			velx(cnt) = cos(_a) * _s
 			vely(cnt) = sin(_a) * _s
 			angl(cnt) = _a
-			if (scene@ == SC_MAIN) : mmplay SND_FIRE
+			if (scene@ == SC_MAIN) : playSound SND_FIRE
 			break
 		}
 	loop
@@ -37,7 +37,7 @@
 				life(cnt) = 0
 				continue
 			}
-			if (checkHitPlayer(posx(cnt), posy(cnt), 10)) {
+			if (checkHitPlayer(posx(cnt), posy(cnt), 8)) {
 				life(cnt) = 0
 				continue
 			}
