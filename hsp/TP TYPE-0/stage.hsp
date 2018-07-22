@@ -1,0 +1,69 @@
+#module stage
+
+#deffunc initStage
+
+	rank = 1.0
+	tcnt = 0
+	time = 0.0
+	return
+	
+#deffunc runStage
+
+	tcnt++
+	time += 16.666
+	rank += 0.001
+	en = getEnemyNum()
+	d = 4 + rank * 0.8
+	if (en >= d) : return
+	if (tcnt == 50) {
+		ptnCircle
+		return
+	}
+	apf = tcnt \ limit(80.0 - rank * 3.0, 10)
+	if (apf == 0) {
+		if (en == 0) {
+			ptnCircle
+			return
+		}
+		repeat
+			x = rnd(400) + 40
+			y = rnd(400) + 40
+			if (distPlayer(x, y) > 30) {
+				genEnemy x, y
+				break
+			}
+		loop
+		return
+	}
+	return
+
+#defcfunc getRank
+
+	return rank
+
+#deffunc ptnCircle@stage
+
+	a = 0.01 * rnd(628)
+	pd = M_PI * 2 / d
+	repeat d
+		t = pd * cnt + a
+		x = cos(t) * 200 + 240
+		y = sin(t) * 200 + 240
+		if (distPlayer(x, y) > 30) {
+			genEnemy x, y
+		}
+	loop
+	return
+
+#deffunc drawTime
+
+	gmulcolor
+	setImgFontAttr 2, 2, 3
+	if (time >= 60000) {
+		drawImgStrR strf("%d:%04.1f", time / 60000, (time / 1000) \ 60), 470, 454
+	} else {
+		drawImgStrR strf("%3.1f", (time / 1000) \ 60), 470, 454
+	}
+	return
+
+#global

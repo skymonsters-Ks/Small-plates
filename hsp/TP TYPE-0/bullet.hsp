@@ -1,0 +1,66 @@
+#module bullet
+
+#deffunc initBullet
+
+	num = 30
+	dim life, num
+	dim tcnt, num
+	ddim posx, num
+	ddim posy, num
+	ddim velx, num
+	ddim vely, num
+	ddim angl, num
+	return
+
+#deffunc genBullet double _x, double _y, double _a, double _s
+
+	repeat num
+		if (life(cnt)) : else {
+			life(cnt) = 1
+			tcnt(cnt) = 0
+			posx(cnt) = _x
+			posy(cnt) = _y
+			velx(cnt) = cos(_a) * _s
+			vely(cnt) = sin(_a) * _s
+			angl(cnt) = _a
+			if (scene@ == SC_MAIN) : mmplay SND_FIRE
+			break
+		}
+	loop
+	return
+
+#deffunc moveBullet
+
+	repeat num
+		if (life(cnt)) {
+			if (inArea(posx(cnt), posy(cnt)) == 0) {
+				life(cnt) = 0
+				continue
+			}
+			if (checkHitPlayer(posx(cnt), posy(cnt), 10)) {
+				life(cnt) = 0
+				continue
+			}
+			posx(cnt) += velx(cnt)
+			posy(cnt) += vely(cnt)
+			tcnt(cnt)++
+		}
+	loop
+	return
+
+#deffunc drawBullet
+
+	gmulcolor 255, 0, 0
+	repeat num
+		if (life(cnt)) {
+			pos posx(cnt), posy(cnt)
+			t = tcnt(cnt) + 1
+			x = limitf(0.10 * t - 0.14, 0.02, 0.36)
+			y = 2.0 / (t * t) + 0.23
+			celput imgTri@, 1, x, y, angl(cnt)
+		}
+	loop
+	return
+
+
+#global

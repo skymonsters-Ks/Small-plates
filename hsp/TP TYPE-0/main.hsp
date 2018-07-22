@@ -1,0 +1,185 @@
+
+;$data wx:480,wy:480,mem:16
+#define TITLE_NAME         "TP TYPE-0"
+#define DATA_FONT          "font/recp8x8"
+#define DATA_FONTIMG       "font/recp8x8.png"
+#define DATA_SHAPE         "image/shape64.png"
+#define DATA_SE_SHOT       "se/shot_00.ogg"
+#define DATA_SE_JUMP       "se/effect_01.ogg"
+#define DATA_SE_READY      "se/effect_00.ogg"
+#define DATA_SE_FIRE       "se/shot_01.ogg"
+#define DATA_SE_EXPLOSION  "se/explosion_00.ogg"
+#define DATA_SE_DEAD       "se/explosion_01.ogg"
+#define DATA_BGM           "bgm/short_001.ogg"
+;$end
+
+#include "hsp3dish.as"
+#include "../common/platform.hsp"
+#include "../common/imgfont.hsp"
+#include "../common/frame.hsp"
+#include "../common/key.hsp"
+
+#enum global SC_TITLE = 0
+#enum global SC_MAIN
+#enum global SC_OVER
+
+#enum global SND_BGM = 0
+#enum global SND_SHOT
+#enum global SND_JUMP
+#enum global SND_READY
+#enum global SND_FIRE
+#enum global SND_EXPLOSION
+#enum global SND_DEAD
+
+#include "util.hsp"
+#include "shot.hsp"
+#include "enemy.hsp"
+#include "stage.hsp"
+#include "bullet.hsp"
+#include "player.hsp"
+#include "particle.hsp"
+#include "explosion.hsp"
+
+*start
+
+	title TITLE_NAME
+
+	initKey
+	
+	initImgFont
+	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
+	
+	celload cnvName(DATA_SHAPE)
+	imgTri = stat
+	celdiv imgTri, 64, 64, 32, 32
+	
+	gsel 0
+	
+	mmload DATA_BGM, SND_BGM, 1
+	mmload DATA_SE_SHOT, SND_SHOT
+	mmload DATA_SE_JUMP, SND_JUMP
+	mmload DATA_SE_READY, SND_READY
+	mmload DATA_SE_FIRE, SND_FIRE
+	mmload DATA_SE_EXPLOSION, SND_EXPLOSION
+	mmload DATA_SE_DEAD, SND_DEAD
+	
+	initFrame
+	setFrameTime 16.666
+	setFrameRoutin *update, *draw, 20
+	
+	chgScene SC_TITLE
+	
+	initPlayer
+	
+	goto *mainLoop
+	
+*init
+	initPlayer
+	initShot
+	initEnemy
+	initStage
+	initBullet
+	initParticle
+	initExplosion
+	return
+
+#deffunc chgScene int _s
+
+	if (_s == SC_MAIN) : gosub *init
+	scene = _s
+	scframe = 0
+	return
+
+*mainLoop
+	runFrame
+	goto *mainLoop
+
+*update
+	updateKey
+	
+	switch scene
+	case SC_TITLE
+		movePlayer
+		if (keyDown(KEY_LBUTTON)) {
+			chgScene SC_MAIN
+			mmplay SND_BGM
+		}
+		swbreak
+	case SC_MAIN
+		moveParticle
+		moveExplosion
+		moveShot
+		moveBullet
+		movePlayer
+		moveEnemy
+		runStage
+		swbreak
+	case SC_OVER
+		if (keyDown(KEY_LBUTTON)) : if (scframe > 60) {
+			chgScene SC_MAIN
+			mmplay SND_BGM
+		}
+		moveParticle
+		moveExplosion
+		moveShot
+		moveBullet
+		moveEnemy
+		swbreak
+	swend
+	
+	scframe++
+	return
+
+*draw
+	color 20, 20, 20 : boxf
+	gmode 3, , , 255
+	
+	switch scene
+	case SC_TITLE
+		drawPlayer
+		drawTitle
+		swbreak
+	case SC_MAIN
+		drawExplosion
+		drawMoveArea
+		drawParticle
+		drawPlayer
+		drawEnemy
+		drawShot
+		drawScore
+		drawTime
+		drawBullet
+		swbreak
+	case SC_OVER
+		drawExplosion
+		drawParticle
+		drawEnemy
+		drawShot
+		drawBullet
+		drawGameover
+		drawScore
+		drawTime
+		swbreak
+	swend
+	
+	return
+
+#deffunc drawTitle
+
+	gmulcolor
+	setImgFontAttr 2, 2, 4
+	drawImgStrC TITLE_NAME, 240, 160
+	setImgFontAttr 1, 1, 2
+	drawImgStrC "CLICK TO START", 240, 310
+	return
+
+#deffunc drawGameover
+
+	gmulcolor
+	setImgFontAttr 2, 2, 4
+	drawImgStrC "GAME OVER", 240, 210
+	if (scframe > 120) {
+		setImgFontAttr 1, 1, 2
+		drawImgStrC "CLICK TO RETRY", 240, 260
+	}
+	return

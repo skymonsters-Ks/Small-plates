@@ -1,0 +1,128 @@
+#module enemy
+
+#const APR_CNT 40
+
+#deffunc initEnemy
+
+	num = 10
+	dim life, num
+	dim tcnt, num
+	ddim posx, num
+	ddim posy, num
+	dim bcnt, num
+	ddim bang, num
+	ddim bspd, num
+	existnum = 0
+	return
+
+#deffunc genEnemy double _x, double _y
+
+	repeat num
+		if (life(cnt)) : continue
+		life(cnt) = 1
+		tcnt(cnt) = 0
+		posx(cnt) = _x
+		posy(cnt) = _y
+		bcnt(cnt) = 0
+		bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt))
+		bspd(cnt) = getRank() + 3
+		mmplay SND_READY
+		break
+	loop
+	return
+
+#deffunc moveEnemy
+
+	existnum = 0
+	rank = getRank()
+	repeat num
+		if (life(cnt)) {
+			if ((tcnt(cnt) \ limit(80 - rank * 2)) == 0) {
+				bcnt(cnt) = APR_CNT
+				bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt))
+				bspd(cnt) = rank + 5
+				if (scene@ == SC_MAIN) : mmplay SND_READY
+			}
+			if (bcnt(cnt)) {
+				bcnt(cnt)--
+				if (bcnt(cnt) == 0) {
+					genBullet posx(cnt), posy(cnt), bang(cnt), bspd(cnt)
+				}
+			}
+			tcnt(cnt)++
+			existnum++
+		}
+	loop
+	return
+
+#defcfunc getEnemyNum
+
+	return existnum
+
+#defcfunc searchTargetEnemy var _resx, var _resy, double _x, double _y, double _r
+
+	sr = 9999
+	id = -1
+	repeat num
+		if (life(cnt)) : if (tcnt(cnt) > APR_CNT) {
+			r = dist(posx(cnt), posy(cnt), _x, _y)
+			if (r < _r) : if (r < sr) {
+				sr = r
+				id = cnt
+			}
+		}
+	loop
+	if (id >= 0) {
+		_resx = posx(id)
+		_resy = posy(id)
+		return 1
+	}
+	return 0
+
+#defcfunc checkHitEnemy double _x, double _y, double _s
+
+	res = 0
+	repeat num
+		if (life(cnt)) : if (tcnt(cnt) > APR_CNT) {
+			if (dist(_x, _y, posx(cnt), posy(cnt)) < _s) {
+				life(cnt) = 0
+				genExplosion posx(cnt), posy(cnt)
+				if (scene@ == SC_MAIN) : mmplay SND_EXPLOSION
+				addScore 100
+				addMultiplier 1
+				res = 1
+				break
+			}
+		}
+	loop
+	return res
+
+#deffunc drawEnemy
+
+	repeat num
+		if (life(cnt)) {
+			if (tcnt(cnt) > APR_CNT) {
+				color 255, 255, 255
+				grect posx(cnt), posy(cnt), -0.04 * tcnt(cnt), 15, 15
+				grect posx(cnt), posy(cnt), 0.05 * tcnt(cnt), 15, 15
+			}
+			if (bcnt(cnt)) {
+				drawFireGuide cnt, bcnt(cnt)
+			}
+		}
+	loop
+	return
+	
+#deffunc drawFireGuide int _id, int _s
+
+	x = posx(_id)
+	y = posy(_id)
+	co = cos(bang(_id))
+	si = sin(bang(_id))
+	len = bspd(_id) * _s + 5
+	color 255
+	circler x, y, _s
+	line co * len + x, si * len + y, co * _s + x, si * _s + y
+	return
+
+#global

@@ -1,0 +1,50 @@
+#module
+
+#const PI_D32  M_PI / 32
+
+#deffunc circler int _x, int _y, double _r, int _f
+
+	circle _x - _r, _y - _r, _x + _r, _y + _r, _f
+	return
+
+#deffunc gbox int _x, int _y, int _sx, int _sy
+
+	x = _sx / 2
+	y = _sy / 2
+	line _x + x, _y - y, _x - x, _y - y
+	line _x + x, _y + y
+	line _x - x, _y + y
+	line _x - x, _y - y
+	return
+	
+#deffunc gtri int _x, int _y, double _a, double _sx, double _sy
+
+	x = 1.0, 1.0, -0.5, -0.5
+	y = 0.0, 0.0, 0.866025, -0.866025
+	repeat 4
+		x(cnt) *= _sx / 2
+		y(cnt) *= _sy / 2
+	loop
+	repeat 4
+		vx(cnt) = _x + (x(cnt) * cos(_a) - y(cnt) * sin(_a))
+		vy(cnt) = _y + (x(cnt) * sin(_a) + y(cnt) * cos(_a))
+	loop
+	gsquare -1, vx, vy
+	return
+
+#defcfunc dist double _x1, double _y1, double _x2, double _y2
+
+	x = _x2 - _x1
+	y = _y2 - _y1
+	return sqrt(x * x + y * y)
+
+#defcfunc inArea int _x, int _y
+
+	ofs = 10
+	if (_x < -ofs) : return 0
+	if (_y < -ofs) : return 0
+	if (_x > 480 + ofs) : return 0
+	if (_y > 480 + ofs) : return 0
+	return 1
+
+#global

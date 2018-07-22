@@ -1,0 +1,53 @@
+#module explosion
+
+#deffunc initExplosion
+
+	num = 10
+	dim life, num
+	ddim posx, num
+	ddim posy, num
+	return
+
+#deffunc genExplosion double _x, double _y
+
+	repeat num
+		if (life(cnt)) : continue
+		life(cnt) = 30
+		posx(cnt) = _x
+		posy(cnt) = _y
+		repeat 4
+			genParticle _x, _y
+		loop
+		break
+	loop
+	return
+
+#deffunc moveExplosion
+
+	repeat num
+		if (life(cnt)) {
+			life(cnt)--
+		}
+	loop
+	return
+
+#deffunc drawExplosion
+
+	color 255, 255, 255
+	repeat num
+		if (life(cnt)) {
+			s = -20.0 / ((30 - life(cnt)) + 1) + 40
+			circler posx(cnt), posy(cnt), s, 1
+		}
+	loop
+	color 20, 20, 20
+	repeat num
+		if (life(cnt)) {
+			s = (30.0 - life(cnt)) / 30 - 1 
+			s = (-powf(s, 4) + 1) * 39.5
+			circler posx(cnt), posy(cnt), s, 1
+		}
+	loop
+	return
+
+#global

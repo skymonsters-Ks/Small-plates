@@ -1,0 +1,134 @@
+#module player
+
+#deffunc initPlayer
+
+	posx = 240.0
+	posy = 240.0
+	tcnt = 0
+	fieldradius = 0.0
+	fieldacc = 0.0
+	cannext = 0
+	nextx = posx
+	nexty = posy
+	shotintervalcnt = 0
+	targetx = 0.0
+	targety = 0.0
+	score = 0
+	multiplier = 1.0
+	multidv = 0.0
+	return
+
+#deffunc movePlayer
+
+	if (cannext) : if (dist(posx, posy, nextx, nexty) < fieldradius) {
+		jump nextx, nexty
+	}
+	if (keyDown(KEY_LBUTTON)) {
+		if (dist(posx, posy, mousex, mousey) < fieldradius) {
+			jump mousex, mousey
+		} else {
+			nextx = double(mousex)
+			nexty = double(mousey)
+			cannext = 1
+		}
+	}
+	fieldradius += limitf(0.01 * fieldacc * (4 + 2 * cannext), 2, 6)
+	fieldacc = limitf(0.5 + fieldacc, 0, 100)
+	if (shotintervalcnt) {
+		shotintervalcnt--
+	} else {
+		if (searchTargetEnemy(targetx, targety, posx, posy, fieldradius)) {
+			genShot posx, posy, atan(targety - posy, targetx - posx)
+			shotintervalcnt = 8
+		}
+	}
+	multiplier = limitf(multiplier + multidv, 1)
+	multidv -= 0.0008
+	tcnt++
+	return
+
+#deffunc jump@player double _x, double _y
+
+	posx = _x
+	posy = _y
+	cannext = 0
+	fieldradius = 0.0
+	fieldacc -= 30
+	mmplay SND_JUMP
+	return
+
+#defcfunc checkHitPlayer double _x, double _y, double _s
+
+	if (scene@ == SC_MAIN) : if (dist(_x, _y, posx, posy) < _s) {
+		genExplosion posx, posy
+		chgScene SC_OVER
+		mmplay SND_DEAD
+		mmstop SND_BGM
+		return 1
+	}
+	return 0
+
+#defcfunc distPlayer double _x, double _y
+
+	return dist(posx, posy, _x, _y)
+
+#defcfunc getAngleToPlayer double _x, double _y
+
+	return atan(posy - _y, posx - _x)
+
+#deffunc addMultiplier double _m
+
+	multiplier = limitf(multiplier + _m, 1, 10)
+	multidv = 0.0
+	return
+
+#deffunc drawMoveArea
+
+	gmode 5, , , 50
+	gmulcolor
+	s = fieldradius / 31
+	pos posx, posy
+	celput imgTri@, 0, s, s, s
+	gmode 3, , , 255
+	color 255, 255, 255
+	circler posx, posy, fieldradius
+	return
+
+#deffunc drawPlayer
+
+	if (cannext) {
+		color 255, 255, 255
+		line nextx - 10, nexty, nextx + 10, nexty
+		line nextx, nexty - 10, nextx, nexty + 10
+		color 20, 20, 20
+		boxf nextx - 3, nexty - 3, nextx + 4, nexty + 4
+	}
+	color 255, 255, 255
+	grect posx, posy, -0.04 * tcnt, 20, 20
+	repeat 4
+		t = 0.04 * tcnt + M_PI * cnt / 2
+		x = cos(t) * 8 + posx
+		y = sin(t) * 8 + posy
+		grect x, y, -0.07 * tcnt + t, 8, 16
+	loop
+	return
+
+#deffunc addScore int _s
+
+	if (scene@ == SC_MAIN) {
+		score = limit(score + multiplier * _s, 0, 999999)
+	}
+	return
+
+#deffunc drawScore
+
+	gmulcolor
+	setImgFontAttr 1, 1, 2
+	drawImgStr strf("x%.2f", multiplier), 10, 31
+	color 255, 255, 255
+	line 9.9 * multiplier + 10, 27, 10, 27
+	setImgFontAttr 2, 2, 3
+	drawImgStr strf("%06d", score), 10, 10
+	return
+
+#global

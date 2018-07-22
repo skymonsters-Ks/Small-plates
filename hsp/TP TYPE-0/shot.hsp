@@ -1,0 +1,64 @@
+#module shot
+
+#deffunc initShot
+
+	num = 10
+	dim life, num
+	dim tcnt, num
+	ddim posx, num
+	ddim posy, num
+	ddim velx, num
+	ddim vely, num
+	ddim angl, num
+	return
+
+#deffunc genShot double _x, double _y, double _a
+
+	repeat num
+		if (life(cnt)) : continue
+		life(cnt) = 1
+		tcnt(cnt) = 0
+		posx(cnt) = _x
+		posy(cnt) = _y
+		velx(cnt) = cos(_a) * 10
+		vely(cnt) = sin(_a) * 10
+		angl(cnt) = _a
+		mmplay SND_SHOT
+		break
+	loop
+	return
+
+#deffunc moveShot
+
+	repeat num
+		if (life(cnt)) {
+			if (inArea(posx(cnt), posy(cnt)) == 0) {
+				life(cnt) = 0
+				continue
+			}
+			if (checkHitEnemy(posx(cnt), posy(cnt), 15)) {
+				life(cnt) = 0
+				continue
+			}
+			posx(cnt) += velx(cnt)
+			posy(cnt) += vely(cnt)
+			tcnt(cnt)++
+		}
+	loop
+	return
+
+#deffunc drawShot
+
+	gmulcolor
+	repeat num
+		if (life(cnt)) {
+			pos posx(cnt), posy(cnt)
+			t = tcnt(cnt) + 1
+			x = limitf(0.10 * t - 0.14, 0.02, 0.4)
+			y = 2.0 / (t * t) + 0.2
+			celput imgTri@, 1, x, y, angl(cnt)
+		}
+	loop
+	return
+
+#global
