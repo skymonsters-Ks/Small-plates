@@ -10,7 +10,7 @@
 #define DATA_SE_FIRE       "se/shot_01.ogg"
 #define DATA_SE_EXPLOSION  "se/explosion_00.ogg"
 #define DATA_SE_DEAD       "se/explosion_01.ogg"
-#define DATA_BGM           "bgm/short_001.ogg"
+#define DATA_BGM           "bgm/tp0.ogg"
 ;$end
 
 #include "hsp3dish.as"
