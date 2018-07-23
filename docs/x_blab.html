@@ -1,25 +1,24 @@
-<!doctype html>
-<html lang="en-us">
+<!DOCTYPE html>
+<html>
 
 	<head>
 		<meta charset="utf-8">
-		<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-		<script type='text/javascript'>
-			var global_data_title = 'Bullet Lab';
-			var global_data_file = ['ax/blab.ax','image/bullet.png','font/recp8x8','font/recp8x8.png'];
-			var global_data_env = {wx:640,wy:600,step:20000,cap:2};
+		<meta name="viewport" content="width=760">
+		<title>Bullet Lab</title>
+		<script>
+			const global_data_title = "Bullet Lab";
+			const global_data_file = ['ax/blab.ax','image/bullet.png','font/recp8x8','font/recp8x8.png'];
+			const global_data_env = {wx:640,wy:600,step:20000,cap:2,rate:1,mem:32};
 		</script>
-		<script type="text/javascript" src="js/init.js"></script>
+		<script src="js/init.js"></script>
 		<link type="text/css" rel="stylesheet" href="css/style.css" />
 		<style></style>
 	</head>
 	
 	<body id="body">
-	
-		<script type="text/javascript">setupBody('<textarea id="scriptarea" rows="3" cols="50"></textarea>');</script>
-		<script type="text/javascript" src="js/load.js"></script>
-		<script type="text/javascript" src="js/hsp3dish.js" async></script>
-		
+		<script>setupBody('<textarea id="scriptarea" rows="3" cols="50"></textarea>');</script>
+		<script src="js/load.js"></script>
+		<script src="js/hsp3dish.js" async></script>
 	</body>
 	
 </html>

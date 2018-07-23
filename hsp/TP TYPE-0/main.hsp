@@ -1,5 +1,5 @@
 
-;$data wx:480,wy:480,mem:16
+;$data wx:480,wy:480,mem:16,step:10000
 #define TITLE_NAME         "TP TYPE-0"
 #define DATA_FONT          "font/recp8x8"
 #define DATA_FONTIMG       "font/recp8x8.png"

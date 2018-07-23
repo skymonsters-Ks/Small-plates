@@ -1,13 +1,10 @@
-document.getElementById('page_title').innerHTML = global_data_title;
-document.getElementById('title').innerHTML = global_data_title;
-document.getElementById('powered').innerHTML = 'powered by <a href="http://hsp.tv/make/hsp3dish.html" target="_blank">hsp3dish.js</a> / OpenHSP'
-
-var statusElement = document.getElementById('status');
-var statElement = document.getElementById('stat');
-var controlsElement = document.getElementById('controls');
-var outputElement = document.getElementById('output');
-
-controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullscreen(0, 0)">';
+if (global_data_title) {
+	var controlsElement = document.getElementById('controls');
+	var outputElement = document.getElementById('output');
+	document.getElementById('title').innerHTML = global_data_title;
+	document.getElementById('powered').innerHTML = 'powered by <a href="http://hsp.tv/make/hsp3dish.html" target="_blank">hsp3dish.js</a> / OpenHSP';
+	controlsElement.innerHTML = '<input type="button" value="Fullscreen" onclick="Module.requestFullscreen(0, 0)">';
+}
 
 var Module = {
 
@@ -17,9 +14,11 @@ var Module = {
 
 	print: function(text) {
 		if (text) {
-			outputElement.innerHTML += text + '<br>';
-			// outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
 			console.log(text);
+			if (global_data_title) {
+				outputElement.innerHTML += text + '<br>';
+				// outputElement.scrollTop = outputElement.scrollHeight; // focus on bottom
+			}
 		}
 	},
 
@@ -38,11 +37,15 @@ var Module = {
 		if (!this.pretext) this.pretext = '';
 		if (text === this.pretext) return;
 		this.pretext = text;
+		const statusElement = document.getElementById('status');
 		if (!text) {
-			statElement.style.display = 'none';
-			outputElement.style.display = 'block';
-			if (outputElement.textContent.indexOf('INIT') >= 0) {
-				controlsElement.style.display = 'inline-block';
+			statusElement.style.display = 'none';
+			if (global_data_title) {
+				document.getElementById('stat').style.display = 'none';
+				outputElement.style.display = 'block';
+				if (outputElement.textContent.indexOf('INIT') >= 0) {
+					controlsElement.style.display = 'inline-block';
+				}
 			}
 		} else {
 			console.log(text);

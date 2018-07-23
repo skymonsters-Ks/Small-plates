@@ -6,17 +6,20 @@
 		<meta name="viewport" content="width=$$viewWidth$$">
 		<title>$$titleName$$</title>
 		<script>
-			const global_data_title = "$$titleName$$";
+			const global_data_title = "";
 			const global_data_file = [$$dataName$$];
 			const global_data_env = {$$envData$$};
 		</script>
-		<script src="js/init.js"></script>
-		<link type="text/css" rel="stylesheet" href="css/style.css" />
-		<style>$$style$$</style>
+		<style>
+			*{margin:0;}.emscripten_border{position:relative;}#status{position:absolute;top:0;left:0;width:100%;}
+		</style>
 	</head>
 	
-	<body id="body">
-		<script>setupBody($$bodyTag$$);</script>
+	<body>
+		<div class="emscripten_border">
+			<div id="status"></div>
+			<canvas id="canvas" width="$$canvasWidth$$" height="$$canvasHeight$$" oncontextmenu="event.preventDefault()"></canvas>
+		</div>
 		<script src="js/load.js"></script>
 		<script src="js/hsp3dish.js" async></script>
 	</body>

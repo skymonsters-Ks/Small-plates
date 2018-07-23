@@ -1,13 +1,3 @@
-if (!global_data_env.wx) global_data_env.wx = 640;
-if (!global_data_env.wy) global_data_env.wy = 480;
-if (!global_data_env.rate) global_data_env.rate = 1;
-if (!global_data_env.step) global_data_env.step = 5000;
-if (!global_data_env.mem) global_data_env.mem = 32;
-if (!global_data_env.cap) global_data_env.cap = 0;
-
-document.write('<meta name="viewport" content="width=' + (global_data_env.wx * global_data_env.rate + 120) + '">');
-document.write('<title id="page_title"></title>');
-
 function setupBody(html) {
 	var bodyElement = document.getElementById('body');
 	bodyElement.innerHTML  = '<div id="header"><h1 id="title"></h1><span id="controls"></span></div>';
