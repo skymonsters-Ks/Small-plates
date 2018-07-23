@@ -1,0 +1,34 @@
+#module
+
+#deffunc initSound
+
+	dim time, 32
+	getreq ntime, SYSREQ_TIMER
+	ntime -= 50
+	return
+
+#deffunc loadSound str _fn, int _id, int _flag
+
+	mmload _fn, _id, _flag
+	getreq time(_id), SYSREQ_TIMER
+	return
+	
+#deffunc updateSound
+
+	getreq ntime, SYSREQ_TIMER
+	return
+	
+#deffunc playSound int _id
+
+	if (ntime - time(_id) >= 50) {
+		time(_id) = ntime
+		mmplay _id
+	}
+	return
+	
+#deffunc stopSound int _id
+
+	mmstop _id
+	return
+
+#global

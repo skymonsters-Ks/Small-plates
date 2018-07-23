@@ -39,7 +39,7 @@
 			} else {
 				if (tcnt(cnt)) {
 					genBullet posx(cnt), posy(cnt), bang(cnt), bspd(cnt)
-					bcnt(cnt) = APR_CNT + limit(60 - rank * 7, 1, 60)
+					bcnt(cnt) = APR_CNT + limit(70.0 - rank * 10, 1, 60)
 				} else {
 					bcnt(cnt) = APR_CNT
 				}

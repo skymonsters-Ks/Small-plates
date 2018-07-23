@@ -15,10 +15,10 @@
 	emax = limit(4 + rank * 0.8, 4, getEnemyMax())
 	apcnt--
 	if (apcnt == 0) {
-		apcnt = limit(90.0 - rank * 4.0, 10, 80)
+		apcnt = limit(90.0 - rank * 6 - sin(time / 7000) * 14, 10, 80)
 		en = getEnemyNum()
 		if (en >= emax) : return
-		cl = limit(emax - 9, 0, 4)
+		cl = limit(emax - 7, 0, 4)
 		if (en <= cl) {
 			ptnCircle emax - cl
 		} else {
@@ -53,7 +53,7 @@
 		t = pd * cnt + a
 		x = cos(t) * 200 + 240
 		y = sin(t) * 200 + 240
-		if (distPlayer(x, y) > 30) {
+		if (distPlayer(x, y) > 40) : if (distNearestEnemy(x, y) > 40) {
 			genEnemy x, y
 		}
 	loop

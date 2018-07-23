@@ -39,7 +39,7 @@
 	} else {
 		if (searchTargetEnemy(targetx, targety, posx, posy, fieldradius)) {
 			genShot posx, posy, atan(targety - posy, targetx - posx)
-			shotintervalcnt = 8
+			shotintervalcnt = 7
 		}
 	}
 	multiplier = limitf(multiplier + multidv, 1)

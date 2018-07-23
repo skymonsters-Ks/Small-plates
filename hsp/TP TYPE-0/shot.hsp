@@ -20,8 +20,8 @@
 		tcnt(cnt) = 0
 		posx(cnt) = _x
 		posy(cnt) = _y
-		velx(cnt) = cos(_a) * 10
-		vely(cnt) = sin(_a) * 10
+		velx(cnt) = cos(_a) * 11
+		vely(cnt) = sin(_a) * 11
 		angl(cnt) = _a
 		playSound SND_SHOT
 		break
