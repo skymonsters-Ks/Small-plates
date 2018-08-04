@@ -78,6 +78,7 @@
 	goto *mainLoop
 	
 *init
+	initBg
 	initShot
 	initEnemy
 	initStage

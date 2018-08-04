@@ -14,10 +14,10 @@
 	delay = getDelay() - stdelay
 	time += 16.666666
 	rank += 0.001
-	emax = limit(3.6 + rank * 0.82, 4, getEnemyMax())
+	emax = limit(4 + time / 15000, 4, getEnemyMax())
 	apcnt--
 	if (apcnt == 0) {
-		apcnt = limit(90.0 - rank * 5 - sin(time / 7000) * 10, 10, 80)
+		apcnt = limit(90.0 - rank * 5 - sin(time / 6500) * 10, 10, 80)
 		en = getEnemyNum()
 		if (en < emax) {
 			cl = limit(emax - 7, 0, 4)

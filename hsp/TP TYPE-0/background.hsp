@@ -1,16 +1,16 @@
 #module background
 
+#const PI_D6 M_PI / 6
+
 #deffunc initBg
 
-	posx = rnd(400) + 40
-	posy = rnd(400) + 40
 	ang = 0.0
 	return
 
 #deffunc updateBg
 
-	ang += 0.002
 	tcnt++
+	ang += 0.002
 	return
 	
 #deffunc drawBg
@@ -22,12 +22,15 @@
 		s = 64 - cnt * 32
 		n = cnt \ 2 * 2 - 1
 		repeat 12
-			t = M_PI / 6 * cnt + 0.001 * tcnt * n
+			t = PI_D6 * cnt + 0.001 * tcnt * n
 			x = cos(t) * r + 240
 			y = sin(t) * r + 240
 			grect x, y, ang + t, s, s
 		loop
 	loop
+	gmulcolor
+	setImgFontAttr 1, 1, 0
+	drawImgStr "2r", 10, 462
 	gmode 3, , , 255
 	return
 
