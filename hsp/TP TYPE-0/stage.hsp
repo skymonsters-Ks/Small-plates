@@ -6,23 +6,26 @@
 	time = 0.0
 	rank = 1.0
 	apcnt = 50
+	stdelay = getDelay()
 	return
 	
 #deffunc runStage
 
+	delay = getDelay() - stdelay
 	time += 16.666666
 	rank += 0.001
-	emax = limit(4 + rank * 0.8, 4, getEnemyMax())
+	emax = limit(3.6 + rank * 0.82, 4, getEnemyMax())
 	apcnt--
 	if (apcnt == 0) {
-		apcnt = limit(90.0 - rank * 6 - sin(time / 7000) * 14, 10, 80)
+		apcnt = limit(90.0 - rank * 5 - sin(time / 7000) * 10, 10, 80)
 		en = getEnemyNum()
-		if (en >= emax) : return
-		cl = limit(emax - 7, 0, 4)
-		if (en <= cl) {
-			ptnCircle emax - cl
-		} else {
-			ptnSingle
+		if (en < emax) {
+			cl = limit(emax - 7, 0, 4)
+			if (en <= cl) {
+				ptnCircle emax - cl
+			} else {
+				ptnSingle
+			}
 		}
 	}
 	return
@@ -38,7 +41,7 @@
 		r = rnd(200)
 		x = cos(a) * r + 240
 		y = sin(a) * r + 240
-		if (distPlayer(x, y) > 50) : if (distNearestEnemy(x, y) > 40) {
+		if (distPlayer(x, y) > limit(100 - getJumpCounter(), 60, 100)) : if (distNearestEnemy(x, y) > 40) {
 			genEnemy x, y
 			break
 		}
@@ -62,6 +65,10 @@
 #deffunc drawTime
 
 	gmulcolor
+	if (delay >= 100) {
+		setImgFontAttr 1, 1, 2
+		drawImgStrR strf("%.1f", double(delay) / 1000), 470, 442
+	}
 	setImgFontAttr 2, 2, 3
 	if (time >= 60000) {
 		drawImgStrR strf("%d:%02d.%d", time / 60000, (time / 1000) \ 60, time \ 1000 / 100), 470, 454

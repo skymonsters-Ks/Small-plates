@@ -39,14 +39,14 @@
 			} else {
 				if (tcnt(cnt)) {
 					genBullet posx(cnt), posy(cnt), bang(cnt), bspd(cnt)
-					bcnt(cnt) = APR_CNT + limit(70.0 - rank * 10, 1, 60)
+					bcnt(cnt) = APR_CNT + limit(70.0 - rank * 9, 1, 60)
 				} else {
 					bcnt(cnt) = APR_CNT
 				}
 				bspd(cnt) = limitf(rank + 5, 0, 10)
 			}
 			if (bcnt(cnt) == APR_CNT) {
-				bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt)) + limitf(0.0002 * (rnd(201) - 100) * rank, -1.4, 1.4)
+				bang(cnt) = getAngleToPlayer(posx(cnt), posy(cnt)) + limitf(0.0003 * (rnd(201) - 100) * rank, -1.4, 1.4)
 				if (scene@ == SC_MAIN) : playSound SND_READY
 			}
 			tcnt(cnt)++

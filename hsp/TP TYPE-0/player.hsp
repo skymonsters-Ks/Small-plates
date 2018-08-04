@@ -16,6 +16,7 @@
 	score = 0
 	multiplier = 1.0
 	multidv = 0.0
+	jcnt = 0
 	return
 
 #deffunc movePlayer
@@ -44,8 +45,13 @@
 	}
 	multiplier = limitf(multiplier + multidv, 1)
 	multidv -= 0.001
+	jcnt++
 	tcnt++
 	return
+
+#defcfunc getJumpCounter
+
+	return jcnt
 
 #deffunc jump@player double _x, double _y
 
@@ -54,6 +60,7 @@
 	cannext = 0
 	fieldradius = 0.0
 	fieldacc -= 30
+	jcnt = 0
 	playSound SND_JUMP
 	return
 

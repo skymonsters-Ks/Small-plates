@@ -68,7 +68,7 @@
 	
 	initFrame
 	setFrameTime 16.666
-	setFrameRoutin *update, *draw, 20
+	setFrameRoutin *update, *draw, 5
 	
 	chgScene SC_TITLE
 	
@@ -105,10 +105,11 @@
 	
 	switch scene
 	case SC_TITLE
-		movePlayer
 		if (keyDown(KEY_LBUTTON)) {
 			chgScene SC_MAIN
 			playSound SND_BGM
+		} else {
+			movePlayer
 		}
 		swbreak
 	case SC_MAIN

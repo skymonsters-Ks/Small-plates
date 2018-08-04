@@ -63,6 +63,31 @@ var Module = {
 	arguments: [global_data_file[0]]
 };
 
+{
+	function resizeCanvas() {
+		var w = window.innerWidth;
+		var h = window.innerHeight;
+		var cs = Module.canvas.style;
+		var cw = global_data_env.wx * global_data_env.rate;
+		var ch = global_data_env.wy * global_data_env.rate;
+		if (w * ch / cw > h) {
+			const nw = h * cw / ch;
+			cs.width = nw + 'px';
+			cs.top = '0';
+			cs.left = (w - nw) / 2 + 'px';
+		} else {
+			const nh = w * ch / cw;
+			cs.width = '100%';
+			cs.top = (h - nh) / 2 + 'px';
+			cs.left = '0';
+		}
+	}
+	if (!global_data_title) {
+		window.onresize = resizeCanvas;
+		resizeCanvas();
+	}
+}
+
 Module.setStatus('Downloading...');
 
 Module.preRun.push(function() {
@@ -76,15 +101,11 @@ Module.preRun.push(function() {
 	ENV.HSP_FPS = '0';
 });
 
-(function() {
-
+{
 	function runWithFS() {
-		
 		var loadedDataNum = 0;
-		var dataNum = global_data_file.length;
 		var dirList = [];
-		
-		function loadData(name) {
+		var loadData = (name) => {
 			var idx = name.indexOf('/');
 			if (idx >= 0) {
 				var dir = name.slice(0, idx);
@@ -99,7 +120,7 @@ Module.preRun.push(function() {
 			xhr.responseType = 'arraybuffer';
 			xhr.overrideMimeType('application/octet-stream');
 			xhr.onprogress = function(e) {
-				Module.setStatus('Downloading data... (' + loadedDataNum + '/' + dataNum + ')');
+				Module.setStatus('Downloading data... (' + loadedDataNum + '/' + global_data_file.length + ')');
 			};
 			xhr.onload = function(e) {
 				if (this.status == 200) {
@@ -116,16 +137,12 @@ Module.preRun.push(function() {
 				Module.removeRunDependency(name);
 			};
 			xhr.send();
-		}
-		
-		for (var i = 0; i < dataNum; i++) loadData(global_data_file[i]);
-
+		};
+		for (const fn of global_data_file) loadData(fn);
 	}
-	
 	if (Module.calledRun) {
 		runWithFS();
 	} else {
 		Module.preRun.push(runWithFS); // FS is not initialized yet, wait for it
 	}
-
-})();
+}
