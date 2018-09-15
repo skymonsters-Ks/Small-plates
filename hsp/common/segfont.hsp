@@ -15,16 +15,16 @@
 #deffunc loadSegFont_ str _fn, str _ifn
 
 /*
-	•ªŠ„ƒTƒCƒYx, y
-		i•ªŠ„ƒTƒCƒY‚ª 0 ‚Ìê‡grect•`‰æA‰æ‘œ‚Í–³Ž‹‚³‚ê‚éj
-	ƒZƒOƒƒ“ƒgID, À•Wx, y, ’·‚³, •, Šp“x, •ªŠ„‰æ‘œNo.
-		iÀ•W‚Í -1.0 ~ 1.0 ‚ªŠî€j
-		iŠp“x‚Í…•½‚ª 0 “x‚Å‰E‰ñ‚è‚É³j
-	iˆÈ‰º $ ‚ª‚ ‚é‚Ü‚ÅƒZƒOƒƒ“ƒg“o˜^j
+	åˆ†å‰²ã‚µã‚¤ã‚ºx, y
+		ï¼ˆåˆ†å‰²ã‚µã‚¤ã‚ºãŒ 0 ã®å ´åˆgrectæç”»ã€ç”»åƒã¯ç„¡è¦–ã•ã‚Œã‚‹ï¼‰
+	ã‚»ã‚°ãƒ¡ãƒ³ãƒˆID, åº§æ¨™x, y, é•·ã•, å¹…, è§’åº¦, åˆ†å‰²ç”»åƒNo.
+		ï¼ˆåº§æ¨™ã¯ -1.0 ~ 1.0 ãŒåŸºæº–ï¼‰
+		ï¼ˆè§’åº¦ã¯æ°´å¹³ãŒ 0 åº¦ã§å³å›žã‚Šã«æ­£ï¼‰
+	ï¼ˆä»¥ä¸‹ $ ãŒã‚ã‚‹ã¾ã§ã‚»ã‚°ãƒ¡ãƒ³ãƒˆç™»éŒ²ï¼‰
 	$
-	ƒAƒXƒL[•¶Žš •¶Žš•i1.0Šî€j, ƒZƒOƒƒ“ƒgID, ...
-		i•¶Žš‚Ís“ª‚P—ñ–ÚA‚Q—ñ–Ú‚Í”¼ŠpƒXƒy[ƒXj
-	iˆÈ‰º•¶Žš“o˜^j
+	ã‚¢ã‚¹ã‚­ãƒ¼æ–‡å­— æ–‡å­—å¹…ï¼ˆ1.0åŸºæº–ï¼‰, ã‚»ã‚°ãƒ¡ãƒ³ãƒˆID, ...
+		ï¼ˆæ–‡å­—ã¯è¡Œé ­ï¼‘åˆ—ç›®ã€ï¼’åˆ—ç›®ã¯åŠè§’ã‚¹ãƒšãƒ¼ã‚¹ï¼‰
+	ï¼ˆä»¥ä¸‹æ–‡å­—ç™»éŒ²ï¼‰
 */
 	size = 16.0
 	sizeW = 1.0

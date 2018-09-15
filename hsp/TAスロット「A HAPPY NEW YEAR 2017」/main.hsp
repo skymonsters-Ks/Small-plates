@@ -1,7 +1,7 @@
 ;$a>slot2017.ax
 
 ;$data wx:320,wy:240,rate:2,mem:32
-#define TITLE_NAME   "TAƒXƒƒbƒguA HAPPY NEW YEAR 2017v"
+#define TITLE_NAME   "TAã‚¹ãƒ­ãƒƒãƒˆã€ŒA HAPPY NEW YEAR 2017ã€"
 #define DATA_IMG     "image/reel.png"
 ;$end
 

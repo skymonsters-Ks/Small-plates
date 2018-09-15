@@ -14,7 +14,7 @@
 
 #deffunc initImgFont_ int _in
 
-	imgNum = _in ; Å‘å‰æ‘œƒtƒ@ƒCƒ‹”
+	imgNum = _in ; æœ€å¤§ç”»åƒãƒ•ã‚¡ã‚¤ãƒ«æ•°
 	fimg = 0
 	dim winId, imgNum
 	sdim asciiMap, 256, imgNum
@@ -31,12 +31,12 @@
 #deffunc loadImgFont str _fn, str _ifn, int _id
 
 /*
-	•ªŠ„ƒTƒCƒYx, y
-	ƒAƒXƒL[•¶š •¶š•, ƒVƒtƒgx, y
-		i•¶š‚Ís“ª‚P—ñ–ÚA‚Q—ñ–Ú‚Í”¼ŠpƒXƒy[ƒXj
-		i•¶š•AƒVƒtƒg‚ÍƒsƒNƒZƒ‹’PˆÊj
-		iƒVƒtƒgÈ—ª‰Âj
-	iˆÈ‰º•ªŠ„ID‡‚Éj...
+	åˆ†å‰²ã‚µã‚¤ã‚ºx, y
+	ã‚¢ã‚¹ã‚­ãƒ¼æ–‡å­— æ–‡å­—å¹…, ã‚·ãƒ•ãƒˆx, y
+		ï¼ˆæ–‡å­—ã¯è¡Œé ­ï¼‘åˆ—ç›®ã€ï¼’åˆ—ç›®ã¯åŠè§’ã‚¹ãƒšãƒ¼ã‚¹ï¼‰
+		ï¼ˆæ–‡å­—å¹…ã€ã‚·ãƒ•ãƒˆã¯ãƒ”ã‚¯ã‚»ãƒ«å˜ä½ï¼‰
+		ï¼ˆã‚·ãƒ•ãƒˆçœç•¥å¯ï¼‰
+	ï¼ˆä»¥ä¸‹åˆ†å‰²IDé †ã«ï¼‰...
 */
 	loadSentences _fn
 	nextSentence ls

@@ -1,7 +1,7 @@
 ;$a>unel.ax
 
 ;$data wx:640,wy:480,mem:16
-#define TITLE_NAME   "ウネルトリオ"
+#define TITLE_NAME   "繧ｦ繝阪Ν繝医Μ繧ｪ"
 ;$end
 
 #include "hsp3dish.as"

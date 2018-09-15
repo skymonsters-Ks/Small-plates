@@ -4,7 +4,7 @@
 
 #uselib "shell32"
 #func dragAcceptFiles "DragAcceptFiles" int, int
-#func dragQueryFile   "DragQueryFileA" int, int, sptr, int
+#func dragQueryFile   "DragQueryFileW" int, int, wptr, int
 #func dragFinish      "DragFinish" int
 
 	title "genHtml"
@@ -36,7 +36,7 @@
 	repeat num
 		sdim ts, 512
 		dragQueryFile hDrop, cnt, varptr(ts), 512
-		dir = cnvatos(ts)
+		dir = cnvwtos(ts)
 		dirlist x, dir, 5
 		if (stat) {
 			sdim fd
@@ -122,7 +122,7 @@
 		if (i >= 0) {
 			i += instr(ts, i, "\"") + 1
 			getstr ts, ts, i, '\"'
-			titleName = cnvatos(ts)
+			titleName = ts
 			continue
 		}
 		i = instr(ts, 0, "DATA_")
@@ -135,13 +135,13 @@
 		i = instr(ts, 0, ";$body ")
 		if (i >= 0) {
 			getstr ts, ts, i + 7
-			bodyTag = "'" + cnvatos(ts) + "'"
+			bodyTag = "'" + ts + "'"
 			continue
 		}
 		i = instr(ts, 0, ";$style ")
 		if (i >= 0) {
 			getstr ts, ts, i + 8
-			style = cnvatos(ts)
+			style = ts
 			continue
 		}
 	loop
