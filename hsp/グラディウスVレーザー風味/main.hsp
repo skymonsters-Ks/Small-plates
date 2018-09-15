@@ -1,0 +1,216 @@
+;$a>gra5laser.ax
+
+;$data wx:640,wy:480,mem:16,step:10000
+#define TITLE_NAME   "グラディウスVレーザー風味"
+#define DATA_SHADOW  "image/shadow.png"
+;$end
+
+#include "hsp3dish.as"
+#include "../common/platform.hsp"
+
+#const PI2 M_PI * 2
+#const SIM 0.00001
+#const LEN 64
+#const SLEN 0.10
+#const LINTE 50
+#const LINTD 20
+ 
+	scx = ginfo_sx / 2
+	scy = ginfo_sy / 2
+	 
+	; Ship
+	mx = -0.5
+	my = 0.0
+	mv = 0.02
+	dir = 0.0
+	dv = 0.15
+	msx = -0.08, 0.08, 0.08, -0.08
+	msy = -0.04, 0.0, 0.0, 0.04
+ 
+	; Options
+	obl = 80
+	osi = obl - 1
+	repeat obl
+		obx(cnt) = mx
+		oby(cnt) = my
+	loop
+	opn = 2
+	repeat opn
+		opx(cnt) = mx
+		opy(cnt) = my
+	loop
+	odv = obl / (opn + 1)
+ 
+	; Laser(for ship & options)
+	pn = 50
+	si = 0
+	ln = opn + 1
+	dim tm, pn, ln
+	dim lk, pn, ln
+	ddim px, pn, ln
+	ddim py, pn, ln
+	ddim ox, pn, ln
+	ddim oy, pn, ln
+	ddim vx, pn, ln
+	ddim vy, pn, ln
+	lv = 0.07
+	celload cnvName(DATA_SHADOW), 1
+	ltx = LEN, LEN
+	lty = 0, 0, 0, 0
+	lhc = 0
+	 
+	sdw = 1
+	 
+*mainLoop
+ 
+	redraw 0
+	 
+	stick key
+	if key & 16 : sdw ^= 1
+	 
+	x = press(39) - press(37)
+	y = press(40) - press(38)
+	if x || y {
+		if press(88) {
+			a = atan(y, x)
+			if a > M_PI - SIM && dir < 0 : a = -M_PI
+			d = a - dir
+			if d > 0 {
+				if absf(d) > M_PI {
+					dir -= dv : if dir < -M_PI : dir += PI2
+				} else {
+					dir = limitf(dir + dv, -4, a - SIM)
+				}
+			} else {
+				if absf(d) > M_PI {
+					dir += dv : if dir > M_PI : dir -= PI2
+				} else {
+					dir = limitf(dir - dv, a + SIM, 4)
+				}
+			}
+		} else {
+			if x * y : v = 0.71 : else : v = 1.0
+			mx = limitf(mx + v * mv * x, -1, 1)
+			my = limitf(my + v * mv * y, -1, 1)
+			osi = ring(osi + 1, obl)
+			obx(osi) = mx
+			oby(osi) = my
+			repeat opn
+				i = ring(osi - odv * (cnt + 1) + 1, obl)
+				opx(cnt) = obx(i)
+				opy(cnt) = oby(i)
+			loop
+		}
+	}
+ 
+	if lhc {
+		if lhc > LINTD && press(90) == 0 {
+			lhc = LINTD
+		} else {
+			lhc--
+		}
+	} else : if press(90) {
+		lhc = LINTE
+	}
+ 
+	si = ring(si + 1, pn)
+	repeat ln : i = cnt
+		repeat pn
+			tm(cnt, i)++
+			px(cnt, i) += vx(cnt, i)
+			if i {
+				py(cnt, i) += vy(cnt, i)
+			} else {
+				py(cnt) = my
+			}
+		loop
+		if i {
+			x = opx(i - 1)
+			y = opy(i - 1)
+			d = dir
+			k = press(90)
+		} else {
+			x = mx
+			y = my
+			d = 0
+			k = lhc > LINTD
+		}
+		tm(si, i) = 0
+		lk(si, i) = k
+		px(si, i) = x
+		py(si, i) = y
+		ox(si, i) = x
+		oy(si, i) = y
+		vx(si, i) = cos(d) * lv
+		vy(si, i) = sin(d) * lv
+	loop
+ 
+	color 20, 20, 20 : boxf
+	gmode 0
+	 
+	color 220, 200, 40
+	repeat opn
+		circler cnvx(opx(cnt)), cnvy(opy(cnt)), 16, 8
+	loop
+	 
+	color 220, 220, 220
+	repeat 4
+		x(cnt) = cnvx(mx + msx(cnt))
+		y(cnt) = cnvy(my + msy(cnt))
+	loop
+	gsquare -1, x, y
+	 
+	gfilter 1
+	gmode 5, , , 220
+	color 255, 255, 255
+	repeat ln : i = cnt
+		repeat pn - 1
+			c = ring(si - cnt, pn)
+			p = ring(c - 1, pn)
+			if lk(c, i) && lk(p, i) : else : continue
+			x1 = cnvx(px(c, i)) : x2 = cnvx(px(p, i))
+			y1 = cnvy(py(c, i)) : y2 = cnvy(py(p, i))
+			line x1, y1, x2, y2
+			if sdw {
+				x = x2, x1, cnvx(ox(c, i)), cnvx(ox(p, i))
+				y = y2, y1, cnvy(oy(c, i)), cnvy(oy(p, i))
+				ltx(2) = LEN - lv * tm(c, i) / SLEN
+				ltx(3) = LEN - lv * tm(p, i) / SLEN
+				gsquare 1, x, y, ltx, lty
+			}
+		loop
+	loop
+ 
+	gmode 0
+	color 255, 255, 255
+	pos 10, 10
+	mes "[Arrow] Move"
+	mes "[Z] Laser"
+	mes "[X+Arrow] Rotate"
+	mes "[Space] Shadow on/off"
+	 
+	fc++
+		
+	redraw 1
+		
+	await 15
+	goto *mainLoop
+ 
+#defcfunc ring int _i, int _n
+	if _i >= _n : return _i \ _n
+	if _i < 0 : return (_n + _i \ _n) \ _n
+	return _i
+ 
+#defcfunc press int _k, local _r
+	getkey _r, _k
+	return _r
+ 
+#deffunc circler int _x, int _y, int _rx, int _ry
+	circle _x - _rx, _y - _ry, _x + _rx, _y + _ry
+	return
+ 
+#defcfunc cnvx double _x
+	return 0 + (_x + 1) * scx
+ 
+#defcfunc cnvy double _y
+	return 0 + (_y + 1) * scy

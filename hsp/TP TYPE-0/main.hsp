@@ -11,6 +11,7 @@
 #define DATA_SE_EXPLOSION  "se/explosion_00.ogg"
 #define DATA_SE_DEAD       "se/explosion_01.ogg"
 #define DATA_BGM           "bgm/tp0.ogg"
+;$body <a href="https://skymonsters-ks.itch.io/tp-type-0">itch.io page</a>
 ;$end
 
 #include "hsp3dish.as"
