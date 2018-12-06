@@ -13,6 +13,7 @@
 #include "stb_image.h"
 
 #if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#include <unistd.h>
 #include "../../hsp3/hsp3config.h"
 #else
 #include "../hsp3config.h"
@@ -36,13 +37,15 @@
 #include "appengine.h"
 #endif
 
-#ifdef HSPEMSCRIPTEN
+#if defined(HSPEMSCRIPTEN)
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
 #endif
 
-#ifdef HSPLINUX
+#if defined(HSPLINUX)
+#include <SDL/SDL_ttf.h>
+#define TTF_FONTFILE "/ipaexg.ttf"
 #include "font_data.h"
 #endif
 
@@ -54,7 +57,9 @@
 #include "EGL/eglext.h"
 #include "SDL/SDL.h"
 
+
 #else
+
 //#include <GLES2/gl2.h>
 //#include <EGL/egl.h>
 #define GL_GLEXT_PROTOTYPES
@@ -257,12 +262,59 @@ void hgio_init( int mode, int sx, int sy, void *hwnd )
 
 	//フォント準備
 #if defined(HSPNDK) || defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
-	#ifdef USE_JAVA_FONT
+#ifdef USE_JAVA_FONT
 	//font_texid = MakeEmptyTex( FONT_TEX_SX, FONT_TEX_SY );
-	#else
-	font_texid = RegistTexMem( font_data, font_data_size );
-	#endif
+#else
+#if 1
+	char fontpath[HSP_MAX_PATH+1];
+	strcpy( fontpath, hgio_getdir(1) );
+	strcat( fontpath, TTF_FONTFILE );
+
+	if ( TTF_Init() ) {
+		Alertf( "Init:TTF_Init error" );
+	}
+	TTF_Font *font = TTF_OpenFont( fontpath, 16 );
+	if (font == NULL){
+		Alertf( "Init:TTF_OpenFont error" );
+	}
+	SDL_Color dcolor={255,255,255,255};
+	SDL_Surface *surf = TTF_RenderUTF8_Blended(font, "おにたま Test", dcolor );
+    if (surf == NULL){
+    }
+
+	int psx,psy,colors;
+	GLuint texture_format = 0;
+	psx = surf->w;
+	psy = surf->h;
+	colors = surf->format->BytesPerPixel;
+	Alertf( "Init:Surface(%d,%d) %d mask%x",psx,psy,colors,surf->format->Rmask );
+
+	font_texid = MakeEmptyTex( psx, psy );
+	TEXINF *tex = GetTex( font_texid );
+	ChangeTex( tex->texid );
+
+#ifdef HSPRASPBIAN
+	glTexImage2D( GL_TEXTURE_2D, 0, GL_RGBA, psx, psy, 0, GL_RGBA, GL_UNSIGNED_BYTE, surf->pixels );
+#else
+	if (colors == 4) {   // alpha
+		if (surf->format->Rmask == 0x000000ff)
+			texture_format = GL_RGBA;
+			else texture_format = GL_BGRA_EXT;
+	} else {             // no alpha
+		if (surf->format->Rmask == 0x000000ff)
+			texture_format = GL_RGB;
+			else texture_format = GL_BGR_EXT;
+	}
+	glTexImage2D( GL_TEXTURE_2D, 0, colors, psx, psy, 0, texture_format, GL_UNSIGNED_BYTE, surf->pixels );
 #endif
+    //Clean up the surface and font
+    SDL_FreeSurface(surf);
+    TTF_CloseFont(font);
+#endif
+	font_texid = RegistTexMem( font_data, font_data_size );
+#endif
+#endif
+
 	font_sx = 16;
 	font_sy = 16;
 
@@ -1653,6 +1705,9 @@ int hgio_exec( char *msg, char *option, int mode )
 #ifdef HSPIOS
     gb_exec( mode, msg );
 #endif
+#ifdef HSPLINUX
+	system(msg);
+#endif
     return 0;
 }
 
@@ -1736,6 +1791,67 @@ char *hgio_sysinfo( int p2, int *res, char *outbuf )
 	*res = fl;
 	return p1;
 }
+
+
+/*-------------------------------------------------------------------------------*/
+
+static	char dir_hsp[HSP_MAX_PATH+1];
+static	char dir_cmdline[HSP_MAX_PATH+1];
+
+void hgio_setmainarg( char *hsp_mainpath, char *cmdprm )
+{
+	int p,i;
+	strcpy( dir_hsp, hsp_mainpath );
+
+	p = 0; i = 0;
+	while(dir_hsp[i]){
+		if(dir_hsp[i]=='/' || dir_hsp[i]=='\\') p=i;
+		i++;
+	}
+	dir_hsp[p]=0;
+
+	strcpy( dir_cmdline, cmdprm );
+	Alertf( "Init:hgio_setmainarg(%s,%s)",dir_hsp,dir_cmdline );
+}
+
+char *hgio_getdir( int id )
+{
+	//		dirinfo命令の内容を設定する
+	//
+	char dirtmp[HSP_MAX_PATH+1];
+	char *p;
+	
+	*dirtmp = 0;
+	p = dirtmp;
+
+#if defined(HSPLINUX)
+
+	switch( id ) {
+	case 0:				//    カレント(現在の)ディレクトリ
+		getcwd( p, HSP_MAX_PATH );
+		break;
+	case 1:				//    HSPの実行ファイルがあるディレクトリ
+		p = dir_hsp;
+		break;
+	case 2:				//    Windowsディレクトリ
+		break;
+	case 3:				//    Windowsのシステムディレクトリ
+		break;
+	case 4:				//    コマンドライン文字列
+		p = dir_cmdline;
+		break;
+	case 5:				//    HSPTV素材があるディレクトリ
+		strcpy( p, dir_hsp );
+		strcat( p, "/hsptv" );
+		break;
+	default:
+		throw HSPERR_ILLEGAL_FUNCTION;
+	}
+#endif
+
+	return p;
+}
+
 
 /*-------------------------------------------------------------------------------*/
 
@@ -2118,14 +2234,15 @@ int hgio_render_end( void )
 
 #if defined(HSPRASPBIAN) || defined(HSPNDK)
 
-	//hgio_setColor( 0xffffff );
-	//hgio_fcopy( 0, 100,  0, 0, 118, 22, 1 );
-
     //後処理
     if (appengine->display == NULL) {
         // displayが無い
         return 0;
     }
+	//hgio_setColor( 0xffffff );
+	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, 0xffffff );
+
+
     eglSwapBuffers(appengine->display, appengine->surface);
 #endif
 
@@ -2133,6 +2250,13 @@ int hgio_render_end( void )
 	SDL_GL_SwapBuffers();
 #endif
 #if defined(HSPLINUX)
+
+	//hgio_makeTexFont( msg );
+	//hgio_putTexFont( 0,0, (char *)"This is Test.", -1 );
+	//hgio_setColor( 0xffffff );
+	//hgio_boxfill( 100,200,100,10 );
+	//hgio_fcopy( 0,80,  0, 0, 256, 128, font_texid, 0xffffff );
+
 #ifndef HSPRASPBIAN
 	SDL_GL_SwapBuffers();
 #endif
