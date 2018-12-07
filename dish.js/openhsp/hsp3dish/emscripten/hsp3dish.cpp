@@ -417,6 +417,40 @@ void hsp3dish_msgfunc( HSPCTX *hspctx )
 }
 
 
+int js_dialog( int mode, char *str1, char *str2 )
+{
+	switch( mode ){
+	case 0:
+	case 1:
+		EM_ASM_({
+			window.alert( Pointer_stringify($0) );
+		}, str1);
+		return 1;
+	case 2:
+	case 3:
+		return EM_ASM_INT({
+			return window.confirm( Pointer_stringify($0) ) ? 6 : 7;
+		}, str1);
+	case 64:
+		char *s = (char*)EM_ASM_INT({
+			var result = window.prompt( Pointer_stringify($0), Pointer_stringify($1) );
+			if (result === null) {
+				return 0;
+			} else {
+				return (allocate(intArrayFromString(result), 'i8', ALLOC_STACK));
+			}
+		}, str1, str2);
+		if ( s != NULL ) {
+			strncpy( ctx->refstr, s, HSPCTX_REFSTR_MAX - 1 );
+			return 6;
+		} else {
+			ctx->refstr[0] = 0;
+			return 7;
+		}
+	}
+}
+
+
 /*----------------------------------------------------------*/
 //		デバイスコントロール関連
 /*----------------------------------------------------------*/

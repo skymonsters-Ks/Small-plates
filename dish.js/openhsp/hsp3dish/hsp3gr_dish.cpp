@@ -515,12 +515,6 @@ static void cmdfunc_dialog( void )
 	p1 = code_getdi( 0 );
 	ps = code_getds("");
 	ctx->stat = hgio_dialog( p1, stmp, ps );
-#ifdef HSPEMSCRIPTEN
-	if ( p1 == 64 ) {
-		strcpy( ctx->refstr, hgio_prompt( stmp, ps ));
-		ctx->stat = 1;
-	}
-#endif
 }
 
 

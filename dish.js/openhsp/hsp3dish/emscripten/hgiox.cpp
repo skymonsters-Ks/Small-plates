@@ -38,6 +38,7 @@
 #endif
 
 #if defined(HSPEMSCRIPTEN)
+#include "hsp3dish.h"
 #define USE_JAVA_FONT
 #define FONT_TEX_SX 512
 #define FONT_TEX_SY 128
@@ -69,9 +70,6 @@
 #include "SDL/SDL.h"
 #include "SDL/SDL_image.h"
 #include "SDL/SDL_opengl.h"
-
-#include <emscripten.h>
-
 #endif
 
 #include "appengine.h"
@@ -1712,17 +1710,6 @@ int hgio_exec( char *msg, char *option, int mode )
 }
 
 
-#ifdef HSPEMSCRIPTEN
-char *hgio_prompt( char *str1, char *str2 )
-{
-	return (char*)EM_ASM_INT({
-		var result = window.prompt( Pointer_stringify($0), Pointer_stringify($1) );
-		if (result == null) result = '';
-		return (allocate(intArrayFromString(result), 'i8', ALLOC_STACK));
-		}, str1, str2);
-}
-#endif
-
 int hgio_dialog( int mode, char *str1, char *str2 )
 {
 	int res = 0;
@@ -1734,21 +1721,7 @@ int hgio_dialog( int mode, char *str1, char *str2 )
     //Alertf( str1 );
 #endif
 #ifdef HSPEMSCRIPTEN
-	switch( mode ){
-	case 0:
-	case 1:
-		EM_ASM_({
-			window.alert( Pointer_stringify($0) );
-		}, str1);
-		res = 1;
-		break;
-	case 2:
-	case 3:
-		res = EM_ASM_INT({
-			return window.confirm( Pointer_stringify($0) ) ? 6 : 7;
-		}, str1);
-		break;
-	}
+	res = js_dialog( mode, str1, str2 );
 #endif
 	return res;
 }
