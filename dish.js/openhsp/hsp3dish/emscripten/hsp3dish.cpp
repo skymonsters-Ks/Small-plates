@@ -35,7 +35,6 @@
 #include "SDL/SDL_opengl.h"
 
 #include <emscripten.h>
-#include <emscripten/html5.h>
 
 //#define USE_OBAQ
 
@@ -55,7 +54,7 @@ static char fpas[]={ 'H'-48,'S'-48,'P'-48,'H'-48,
 					 'E'-48,'D'-48,'~'-48,'~'-48 };
 static char optmes[] = "HSPHED~~\0_1_________2_________3______";
 
-static int hsp_wx, hsp_wy, hsp_wd, hsp_ss;
+static int hsp_wx, hsp_wy, hsp_sx, hsp_sy, hsp_wd, hsp_ss;
 static int drawflag;
 static int hsp_fps;
 static int hsp_limit_step_per_frame;
@@ -92,132 +91,56 @@ extern "C" {
 #endif
 
 /*----------------------------------------------------------*/
+void handleEvent() {
+	SDL_Event event;
+	while (SDL_PollEvent(&event)) {
+		switch(event.type) {
+		case SDL_MOUSEMOTION:
+		case SDL_MOUSEBUTTONDOWN:
+		case SDL_MOUSEBUTTONUP:
+			{
+				SDL_MouseButtonEvent *m = (SDL_MouseButtonEvent*)&event;
+				// printf("button up: %d,%d  %d,%d\n", m->button, m->state, m->x, m->y);
+				hgio_touch( m->x, m->y, SDL_GetMouseState(NULL, NULL) );
+				break;
+			}
+		case SDL_MOUSEWHEEL:
+			{
+				if ( exinfo != NULL ) {
+					SDL_MouseWheelEvent *m = (SDL_MouseWheelEvent*)&event;
+					Bmscr *bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
+					bm->savepos[BMSCR_SAVEPOS_MOSUEW] = m->y;
+				}
+				break;
+			}
+		case SDL_KEYDOWN:
+			if (!keys[event.key.keysym.sym]) {
+				keys[event.key.keysym.sym] = true;
+				//printf("key down: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
+			}
+			break;
+		case SDL_KEYUP:
+			if (keys[event.key.keysym.sym]) {
+				keys[event.key.keysym.sym] = false;
+				//printf("key up: sym %d scancode %d\n", event.key.keysym.sym, event.key.keysym.scancode);
+			}
+			break;
+		case SDL_FINGERMOTION:
+		case SDL_FINGERDOWN:
+		case SDL_FINGERUP:
+			{
+				SDL_TouchFingerEvent *t = (SDL_TouchFingerEvent*)&event;
+				bool touch = ( event.type == SDL_FINGERMOTION ) || ( event.type == SDL_FINGERDOWN );
+				hgio_mtouchid( t->fingerId, t->x * hsp_sx, t->y * hsp_sy, touch, t->fingerId );
+				break;
+			}
+		}
+	}
+}
 
 bool get_key_state(int sym)
 {
 	return keys[sym];
-}
-
-void getCanvasRate( double &rx, double &ry )
-{
-	double cx, cy;
-	int sx, sy;
-	emscripten_get_element_css_size( 0, &cx, &cy );
-	hgio_getSize( sx, sy );
-	rx = (( cx < 1.0 ) || ( sx < 1 )) ? 1.0 : cx / sx;
-	ry = (( cy < 1.0 ) || ( sy < 1 )) ? 1.0 : cy / sy;
-}
-
-void focusCanvas()
-{
-	if ( capkey > 0 ) EM_ASM({ Module.canvas.focus(); });
-}
-
-bool hasFocusCanvas()
-{
-	return (bool)EM_ASM_INT_V({ return document.activeElement == Module.canvas; });
-}
-
-EM_BOOL key_callback( int eventType, const EmscriptenKeyboardEvent *e, void *userData )
-{
-	// 'keyCode' attribute is deprecated.
-	keys[e->keyCode] = (eventType == EMSCRIPTEN_EVENT_KEYDOWN);
-	if ( capkey > 0 && hasFocusCanvas() ) {
-		// フォーカスがある場合は preventDefault
-		return 1;
-	} else {
-		return 0;
-	}
-}
-
-EM_BOOL mouse_callback( int eventType, const EmscriptenMouseEvent *e, void *userData )
-{
-	double crx, cry;
-	getCanvasRate( crx, cry );
-	hgio_touch( e->canvasX / crx, e->canvasY / cry, e->buttons );
-	if ( eventType == EMSCRIPTEN_EVENT_MOUSEDOWN ) {
-		focusCanvas();
-	}
-	return 0;
-}
-
-EM_BOOL wheel_callback( int eventType, const EmscriptenWheelEvent *e, void *userData )
-{
-	if ( exinfo != NULL ) {
-		Bmscr *bm = (Bmscr *)exinfo->HspFunc_getbmscr(0);
-		bm->savepos[BMSCR_SAVEPOS_MOSUEW] = (int)(e->deltaY * 100);
-	}
-	return 0;
-}
-
-EM_BOOL touch_callback( int eventType, const EmscriptenTouchEvent *e, void *userData )
-{
-	double crx, cry;
-	getCanvasRate( crx, cry );
-	for( int i = 0; i < e->numTouches; i++ ) {
-		const EmscriptenTouchPoint *t = &e->touches[i];
-		bool touch = ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) || ( eventType == EMSCRIPTEN_EVENT_TOUCHMOVE );
-		hgio_mtouchid( t->identifier, t->canvasX / crx, t->canvasY / cry, touch, i );
-	}
-	if ( eventType == EMSCRIPTEN_EVENT_TOUCHSTART ) {
-		focusCanvas();
-	}
-	return 0;
-}
-
-EM_BOOL deviceorientation_callback( int eventType, const EmscriptenDeviceOrientationEvent *e, void *userData )
-{
-	hgio_setinfo( GINFO_EXINFO_GYRO_Z, e->alpha );
-	hgio_setinfo( GINFO_EXINFO_GYRO_X, e->beta );
-	hgio_setinfo( GINFO_EXINFO_GYRO_Y, e->gamma );
-	return 0;
-}
-
-EM_BOOL devicemotion_callback( int eventType, const EmscriptenDeviceMotionEvent *e, void *userData )
-{
-	hgio_setinfo( GINFO_EXINFO_ACCEL_X, e->accelerationX );
-	hgio_setinfo( GINFO_EXINFO_ACCEL_Y, e->accelerationY );
-	hgio_setinfo( GINFO_EXINFO_ACCEL_Z, e->accelerationZ );
-	return 0;
-}
-
-EM_BOOL fullscreenchange_callback( int eventType, const EmscriptenFullscreenChangeEvent *e, void *userData )
-{
-	focusCanvas();
-	return 0;
-}
-
-#define SET_EVENT(f, r) ret = (f); if ( ret < 0 ) Alertf( "event setting error: %s (%d)", #r, ret )
-
-void initHtmlEvent()
-{
-	EMSCRIPTEN_RESULT ret;
-	const char *element = "#canvas";
-	
-	if ( capkey == 2 ) {
-		SET_EVENT( emscripten_set_keydown_callback( element, 0, true, key_callback ), key down );
-	} else {
-		SET_EVENT( emscripten_set_keydown_callback( 0, 0, true, key_callback ), key down );
-	}
-	SET_EVENT( emscripten_set_keyup_callback( 0, 0, true, key_callback ), key up );
-
-	SET_EVENT( emscripten_set_mousedown_callback( element, 0, true, mouse_callback ), mouse down );
-	SET_EVENT( emscripten_set_mouseup_callback( 0, 0, true, mouse_callback ), mouse up );
-	SET_EVENT( emscripten_set_mousemove_callback( element, 0, true, mouse_callback ), mouse move );
-
-	SET_EVENT( emscripten_set_wheel_callback( element, 0, true, wheel_callback ), wheel );
-
-	SET_EVENT( emscripten_set_touchstart_callback( element, 0, true, touch_callback ), touch start );
-	SET_EVENT( emscripten_set_touchend_callback( 0, 0, true, touch_callback ), touch end );
-	SET_EVENT( emscripten_set_touchmove_callback( element, 0, true, touch_callback ), touch move );
-	SET_EVENT( emscripten_set_touchcancel_callback( 0, 0, true, touch_callback ), touch cancel );
-
-	SET_EVENT( emscripten_set_deviceorientation_callback( 0, true, deviceorientation_callback ), device orientation );
-	SET_EVENT( emscripten_set_devicemotion_callback( 0, true, devicemotion_callback ), device motion );
-	
-	if ( capkey > 0 ) {
-		SET_EVENT( emscripten_set_fullscreenchange_callback( 0, 0, true, fullscreenchange_callback ), fullscreen change );
-	}
 }
 
 static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtitle )
@@ -448,6 +371,7 @@ int js_dialog( int mode, char *str1, char *str2 )
 			return 7;
 		}
 	}
+	return -1;
 }
 
 
@@ -500,7 +424,7 @@ static int *hsp3dish_devinfoi( char *name, int *size )
 		if ( capkey == 0 ) {
 			devinfoi_res = 1;
 		} else {
-			devinfoi_res = hasFocusCanvas();
+			devinfoi_res = (int)EM_ASM_INT_V({ return document.activeElement == Module.canvas; });
 		}
 		*size = 1;
 		return &devinfoi_res;
@@ -623,23 +547,21 @@ int hsp3dish_init( char *startfile )
 		}
 	}
 
-	float sx = 0, sy = 0;
-
 	char *env_sx = getenv( "HSP_SX" );
 	if ( env_sx ) {
-		sx = atof( env_sx );
+		hsp_sx = atoi( env_sx );
 	}
 
 	char *env_sy = getenv( "HSP_SY" );
 	if ( env_sy ) {
-		sy = atof( env_sy );
+		hsp_sy = atoi( env_sy );
 	}
 
-	if ( sx > 0 && sy > 0 ) {
+	if ( hsp_sx > 0 && hsp_sy > 0 ) {
 		//OK
 	} else {
-		sx = hsp_wx;
-		sy = hsp_wy;
+		hsp_sx = hsp_wx;
+		hsp_sy = hsp_wy;
 	}
 
 	char *env_autoscale = getenv( "HSP_AUTOSCALE" );
@@ -666,8 +588,6 @@ int hsp3dish_init( char *startfile )
 		capkey = atoi( env_cap );
 	}
 
-	// printf("Screen %f %f\n", sx, sy);
-
 	char *env_syncdir = getenv( "HSP_SYNC_DIR" );
 	if ( env_syncdir ) {
 		syncdir = env_syncdir;
@@ -691,12 +611,12 @@ int hsp3dish_init( char *startfile )
 
 	//		Initalize Window
 	//
-	hsp3dish_initwindow( NULL, sx, sy, "HSPDish ver" hspver " - " modname);
+	hsp3dish_initwindow( NULL, hsp_sx, hsp_sy, "HSPDish ver" hspver " - " modname);
 
-	if ( sx != hsp_wx || sy != hsp_wy ) {
+	if ( hsp_sx != hsp_wx || hsp_sy != hsp_wy ) {
 #ifndef HSPDISHGP
 		hgio_view( hsp_wx, hsp_wy );
-		hgio_size( sx, sy );
+		hgio_size( hsp_sx, hsp_sy );
 		hgio_autoscale( autoscale );
 #endif
 	}
@@ -744,8 +664,6 @@ int hsp3dish_init( char *startfile )
 	HSP3DEVINFO *devinfo;
 	devinfo = hsp3extcmd_getdevinfo();
 	hsp3dish_setdevinfo( devinfo );
-
-	initHtmlEvent();
 
 	return 0;
 }
@@ -844,6 +762,8 @@ void hsp3dish_exec_one( void )
 		}
 		break;
 	}
+	handleEvent();
+
 	//		実行の開始
 	//
 	static int code_execcmd_state = 0;

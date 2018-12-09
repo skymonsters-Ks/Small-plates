@@ -665,7 +665,7 @@ void hgio_setOrigin( int x, int y )
 
 void hgio_scale_point( int xx, int yy, int &x, int &y )
 {
-#ifdef HSPEMSCRIPTEN
+#if 0//def HSPEMSCRIPTEN
 	if ( xx < _originX ) {
 		xx = _originX;
 	} else if ( xx >= _sizex ) {
@@ -702,11 +702,6 @@ int hgio_getHeight( void )
 	return _bgsy;
 }
 
-void hgio_getSize( int &sx, int &sy )
-{
-	sx = _sizex;
-	sy = _sizey;
-}
 
 void hgio_setfilter( int type, int opt )
 {
@@ -728,36 +723,11 @@ int hgio_title( char *str1 )
 }
 
 
-#ifdef HSPEMSCRIPTEN
-#define MOUSE_LBMASK 1
-#define MOUSE_RBMASK 2
-#define MOUSE_MBMASK 4
-#endif
-
 int hgio_stick( int actsw )
 {
 	int ckey = 0;
-#if defined(HSPEMSCRIPTEN)
-	if ( get_key_state(37) )        ckey|=1<<0;  // Left
-	if ( get_key_state(38) )        ckey|=1<<1;  // Up
-	if ( get_key_state(39) )        ckey|=1<<2;  // Right
-	if ( get_key_state(40) )        ckey|=1<<3;  // Down
-	if ( get_key_state(32) )        ckey|=1<<4;  // Space
-	if ( get_key_state(13) )        ckey|=1<<5;  // Enter
-	if ( get_key_state(17) )        ckey|=1<<6;  // Ctrl
-	if ( get_key_state(27) )        ckey|=1<<7;  // Esc
-	if ( mouse_btn & MOUSE_LBMASK ) ckey|=1<<8;  // mouse_l
-	if ( mouse_btn & MOUSE_RBMASK ) ckey|=1<<9;  // mouse_r
-	if ( get_key_state(9) )         ckey|=1<<10; // Tab
-
-	if ( get_key_state(90) )        ckey|=1<<11; // Z
-	if ( get_key_state(88) )        ckey|=1<<12; // X
-	if ( get_key_state(67) )        ckey|=1<<13; // C
-	if ( get_key_state(65) )        ckey|=1<<14; // A
-	if ( get_key_state(83) )        ckey|=1<<15; // S
-	if ( get_key_state(68) )        ckey|=1<<16; // D
-	if ( get_key_state(87) )        ckey|=1<<17; // W
-#elif defined(HSPLINUX)
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 	if ( get_key_state(SDLK_LEFT) )     ckey|=1;
 	if ( get_key_state(SDLK_UP) )       ckey|=1<<1;
 	if ( get_key_state(SDLK_RIGHT) )    ckey|=1<<2;
@@ -771,13 +741,26 @@ int hgio_stick( int actsw )
 	if ( mouse_btn & SDL_BUTTON_RMASK ) ckey|=1<<9;
 	if ( get_key_state(SDLK_TAB) )      ckey|=1<<10;
 	
-	if ( get_key_state(SDLK_z) )     ckey|=1<<11;
-	if ( get_key_state(SDLK_x) )     ckey|=1<<12;
-	if ( get_key_state(SDLK_c) )     ckey|=1<<13;
-	if ( get_key_state(SDLK_a) )     ckey|=1<<14;
-	if ( get_key_state(SDLK_w) )     ckey|=1<<15;
-	if ( get_key_state(SDLK_d) )     ckey|=1<<16;
-	if ( get_key_state(SDLK_s) )     ckey|=1<<17;
+	if ( get_key_state(SDLK_z) )        ckey|=1<<11;
+	if ( get_key_state(SDLK_x) )        ckey|=1<<12;
+	if ( get_key_state(SDLK_c) )        ckey|=1<<13;
+	if ( get_key_state(SDLK_a) )        ckey|=1<<14;
+	if ( get_key_state(SDLK_w) )        ckey|=1<<15;
+	if ( get_key_state(SDLK_d) )        ckey|=1<<16;
+	if ( get_key_state(SDLK_s) )        ckey|=1<<17;
+#else
+	if ( get_key_state(37) ) ckey|=1;		// [left]
+	if ( get_key_state(38) ) ckey|=2;		// [up]
+	if ( get_key_state(39) ) ckey|=4;		// [right]
+	if ( get_key_state(40) ) ckey|=8;		// [down]
+	if ( get_key_state(32) ) ckey|=16;		// [spc]
+	if ( get_key_state(13) ) ckey|=32;		// [ent]
+	if ( get_key_state(17) ) ckey|=64;		// [ctrl]
+	if ( get_key_state(27) ) ckey|=128;		// [esc]
+	if ( get_key_state(1) )  ckey|=256;		// mouse_l
+	if ( get_key_state(2) )  ckey|=512;		// mouse_r
+	if ( get_key_state(9) )  ckey|=1024;	// [tab]
+#endif
 #else
 	if ( mouse_btn ) ckey|=256;	// mouse_l
 #endif
@@ -785,7 +768,8 @@ int hgio_stick( int actsw )
 }
 
 
-#ifdef HSPLINUX
+#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
+#ifndef HSPRASPBIAN
 static const unsigned int key_map[256]={
 	/* 0- */
 	0, 0, 0, 3, 0, 0, 0, 0, SDLK_BACKSPACE, SDLK_TAB, 0, 0, 12, SDLK_RETURN, 0, 0,
@@ -821,19 +805,11 @@ static const unsigned int key_map[256]={
 	0, 0, 0, SDLK_DOLLAR, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 	0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 };
-#endif
 
-#if defined(HSPLINUX) || defined(HSPEMSCRIPTEN)
 bool hgio_getkey( int kcode )
 {
 	bool res = false;
 	switch( kcode ){
-#ifdef HSPEMSCRIPTEN
-		case 1: res = (mouse_btn & MOUSE_LBMASK) > 0; break;
-		case 2: res = (mouse_btn & MOUSE_RBMASK) > 0; break;
-		case 4: res = (mouse_btn & MOUSE_MBMASK) > 0; break;
-		default: res = get_key_state( kcode & SDLK_LAST - 1 ); break;
-#else
 		case 1: res = (mouse_btn & SDL_BUTTON_LMASK) > 0; break;
 		case 2: res = (mouse_btn & SDL_BUTTON_RMASK) > 0; break;
 		case 4: res = (mouse_btn & SDL_BUTTON_MMASK) > 0; break;
@@ -843,10 +819,15 @@ bool hgio_getkey( int kcode )
 		case 17: res = get_key_state(SDLK_LCTRL) | get_key_state(SDLK_RCTRL); break;
 		case 18: res = get_key_state(SDLK_LALT) | get_key_state(SDLK_RALT); break;
 		default: res = get_key_state( key_map[ kcode & 255 ] ); break;
-#endif
 	}
 	return res;
 }
+#else
+bool hgio_getkey( int kcode )
+{
+	return get_key_state( kcode );
+}
+#endif
 #endif
 
 

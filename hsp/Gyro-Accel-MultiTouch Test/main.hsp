@@ -1,6 +1,6 @@
 ;$a>gamtest.ax
 
-;$data wx:480,wy:800,mem:16
+;$data wx:240,wy:400,mem:16,rate:2
 #define TITLE_NAME         "Gyro-Accel-MultiTouch Test"
 #define DATA_FONT          "font/recp8x8"
 #define DATA_FONTIMG       "font/recp8x8.png"
@@ -12,7 +12,7 @@
 
 	initImgFont
 	loadImgFont cnvName(DATA_FONT), cnvName(DATA_FONTIMG)
-	setImgFontAttr 2, 2, 3
+	setImgFontAttr 1, 1, 2
 	
 	setcls 1, $5588cc
 	
@@ -50,8 +50,8 @@
 	
 	repeat cmax
 		if (ce(cnt)) {
-			cs(cnt) += 15
-			if (cs(cnt) > 600) {
+			cs(cnt) += 8
+			if (cs(cnt) > 300) {
 				ce(cnt) = 0
 			}
 		}
@@ -63,7 +63,7 @@
 		mtinfo v, mtl(cnt)
 		x = v(1)
 		y = v(2)
-		s = 80
+		s = 40
 		color 250, 190, 230
 		circle x - s, y - s, x + s, y + s
 	loop
@@ -79,17 +79,17 @@
 	loop
 	
 	drawImgStr strf("GyroX: %.3f", ginfo(259)), 10, 10
-	drawImgStr strf("GyroY: %.3f", ginfo(260)), 10, 30
-	drawImgStr strf("GyroZ: %.3f", ginfo(261)), 10, 50
-	drawImgStr strf("AccelX: %.3f", ginfo(256)), 10, 80
-	drawImgStr strf("AccelY: %.3f", ginfo(257)), 10, 100
-	drawImgStr strf("AccelZ: %.3f", ginfo(258)), 10, 120
-	drawImgStr strf("MouseX: %d", mousex), 10, 150
-	drawImgStr strf("MouseY: %d", mousey), 10, 170
+	drawImgStr strf("GyroY: %.3f", ginfo(260)), 10, 20
+	drawImgStr strf("GyroZ: %.3f", ginfo(261)), 10, 30
+	drawImgStr strf("AccelX: %.3f", ginfo(256)), 10, 60
+	drawImgStr strf("AccelY: %.3f", ginfo(257)), 10, 70
+	drawImgStr strf("AccelZ: %.3f", ginfo(258)), 10, 80
+	drawImgStr strf("MouseX: %d", mousex), 10, 110
+	drawImgStr strf("MouseY: %d", mousey), 10, 120
 	
 	repeat tnum
 		mtinfo v, mtl(cnt)
-		drawImgStr strf("Touch%d: (%d, %d)", cnt, v(1), v(2)), 10, 200 + 20 * cnt
+		drawImgStr strf("Touch%d: (%d, %d)", cnt, v(1), v(2)), 10, 150 + 10 * cnt
 	loop
 	
 	redraw 1
