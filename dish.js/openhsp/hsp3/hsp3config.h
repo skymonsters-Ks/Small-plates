@@ -12,7 +12,7 @@
 #define mvscode 1		// minor version code
 #define vercode 0x3601	// version code
 
-#define modname "cizimi 1.60"
+#define modname "cizimi 1.61"
 
 #define HSPERR_HANDLE		// HSPエラー例外を有効にします
 #define SYSERR_HANDLE		// システムエラー例外を有効にします

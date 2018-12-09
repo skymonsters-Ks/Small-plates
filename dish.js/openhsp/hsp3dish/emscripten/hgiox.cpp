@@ -665,7 +665,8 @@ void hgio_setOrigin( int x, int y )
 
 void hgio_scale_point( int xx, int yy, int &x, int &y )
 {
-#if 0//def HSPEMSCRIPTEN
+#ifdef HSPEMSCRIPTEN
+	//スクリーン外の座標を拾わないようにクランプ
 	if ( xx < _originX ) {
 		xx = _originX;
 	} else if ( xx >= _sizex ) {

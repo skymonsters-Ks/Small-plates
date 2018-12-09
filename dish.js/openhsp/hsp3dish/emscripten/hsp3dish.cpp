@@ -60,7 +60,6 @@ static int hsp_fps;
 static int hsp_limit_step_per_frame;
 static std::string syncdir;
 static bool fs_initialized = false;
-static int capkey;
 
 //static	HWND m_hWnd;
 
@@ -152,16 +151,6 @@ static void hsp3dish_initwindow( engine* engine, int sx, int sy, char *windowtit
 	// glutInitDisplayMode(GLUT_DOUBLE | GLUT_RGB | GLUT_DEPTH);
 
 	// glutCreateWindow(windowtitle);
-
-	if ( capkey > 0 ) {
-		// SDL のキーボードキャプチャを無効化して html の input/textare 要素へ入力できるようにする
-		// ただし backspace/tab などの操作も有効になる
-		EM_ASM({
-			Module.canvas.setAttribute('tabindex', 0);
-			Module.canvas.focus();
-			Module['doNotCaptureKeyboard'] = true;
-		});
-	}
 
 	SDL_Surface *screen;
 
@@ -389,15 +378,6 @@ static int hsp3dish_devprm( char *name, char *value )
 		}, value);
 		return 0;
 	}
-	char *tp = strtok( name, "." );
-	if ( strcmp( tp, "value" )==0 ) {
-		tp = strtok( NULL, "." );
-		if ( tp != NULL ) {
-			EM_ASM_({
-				document.getElementById(Pointer_stringify($0)).value = Pointer_stringify($1)
-			}, tp, value);
-		}
-	}
 	return -1;
 }
 
@@ -420,17 +400,9 @@ static int hsp3dish_devcontrol( char *cmd, int p1, int p2, int p3 )
 
 static int *hsp3dish_devinfoi( char *name, int *size )
 {
-	if ( strcmp( name, "focus" )==0 ) {
-		if ( capkey == 0 ) {
-			devinfoi_res = 1;
-		} else {
-			devinfoi_res = (int)EM_ASM_INT_V({ return document.activeElement == Module.canvas; });
-		}
-		*size = 1;
-		return &devinfoi_res;
-	}
+	devinfoi_res = 0;
 	*size = -1;
-	return NULL;
+	return &devinfoi_res;
 }
 
 static char *hsp3dish_devinfo( char *name )
@@ -445,15 +417,6 @@ static char *hsp3dish_devinfo( char *name )
 		return (char*)EM_ASM_INT_V({
 			return (allocate(intArrayFromString(window.location.search.substring(1)), 'i8', ALLOC_STACK));
 		});
-	}
-	char *tp = strtok( name, "." );
-	if ( strcmp( tp, "value" )==0 ) {
-		tp = strtok( NULL, "." );
-		if ( tp != NULL ) {
-			return (char*)EM_ASM_INT({
-				return (allocate(intArrayFromString(document.getElementById(Pointer_stringify($0)).value), 'i8', ALLOC_STACK));
-			}, tp);
-		}
 	}
 	return NULL;
 }
@@ -580,12 +543,6 @@ int hsp3dish_init( char *startfile )
 	hsp_limit_step_per_frame = 5000;
 	if ( env_step ) {
 		hsp_limit_step_per_frame = atoi( env_step );
-	}
-
-	char *env_cap = getenv( "HSP_CAPTURE_KEY" );
-	capkey = 0;
-	if ( env_cap ) {
-		capkey = atoi( env_cap );
 	}
 
 	char *env_syncdir = getenv( "HSP_SYNC_DIR" );
